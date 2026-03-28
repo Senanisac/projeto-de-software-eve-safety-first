@@ -12,7 +12,7 @@ class Avaliacao:
         self.corrida_id = corrida_id
         self.avaliador_id = avaliador_id
         self.avaliado_id = avaliado_id
-        self.nota = nota  # 1 a 5
+        self.nota = nota  # 1 a 5 
         self.comentario = comentario
         self.data_hora = datetime.now()
     
