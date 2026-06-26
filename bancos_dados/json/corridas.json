@@ -1,42 +1,12 @@
 [
     {
-        "id_corrida": "01226201-79d8-45c4-9775-bd4f22358ac9",
-        "passageiro": "Isaac",
+        "id_corrida": "9cdbb698-7959-4dae-82dd-88017ba087c9",
+        "passageiro": "Ana Souza",
         "origem": "Casa",
         "destino": "Centro",
-        "distancia": 41.68,
+        "distancia": 16.23,
         "status": "confirmada",
-        "valor": 83.36,
-        "tipo_veiculo": "Carro"
-    },
-    {
-        "id_corrida": "d3847964-7b3b-4df7-a1bc-67f0cc1a01f4",
-        "passageiro": "Isaac",
-        "origem": "Casa",
-        "destino": "Centro",
-        "distancia": 7.04,
-        "status": "confirmada",
-        "valor": 14.08,
-        "tipo_veiculo": "Carro"
-    },
-    {
-        "id_corrida": "4c775f24-52d8-48a1-b9ec-f6c9a0634de6",
-        "passageiro": "Isaac",
-        "origem": "Casa",
-        "destino": "Centro",
-        "distancia": 35.66,
-        "status": "confirmada",
-        "valor": 71.32,
-        "tipo_veiculo": "Carro"
-    },
-    {
-        "id_corrida": "cad0fc11-a2c6-4ee6-ae0f-a44294dbf348",
-        "passageiro": "Isaac",
-        "origem": "Casa",
-        "destino": "Centro",
-        "distancia": 49.86,
-        "status": "confirmada",
-        "valor": 99.72,
+        "valor": 32.46,
         "tipo_veiculo": "Carro"
     }
 ]

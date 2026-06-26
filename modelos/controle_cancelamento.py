@@ -14,7 +14,8 @@ class ControleCancelamento:
         "Emergência"
     ]
 
-    def __init__(self, limite_por_dia):
+    def __init__(self, motorista, limite_por_dia):
+        self.motorista = motorista 
         self.limite = limite_por_dia
         self.cancelamentos = 0
         self.data_atual = date.today() 
@@ -34,15 +35,19 @@ class ControleCancelamento:
         
         if not motivo or motivo.strip() == "":
             print("Erro: é obrigatório informar o motivo do cancelamento")
-            return
+            return False 
 
         if motivo not in self.MOTIVOS_VALIDOS:
             print("Erro: motivo inválido")
             self.mostrar_motivos()
-            return
+            return False 
 
         if self.cancelamentos < self.limite:
             self.cancelamentos += 1
-            print(f"Corrida cancelada. Motivo: {motivo}")
+            self.motorista.cancelamentos += 1
+            print(f"Corrida cancelada. Motivo: {motivo}"
+                  f"(cancelamento {self.cancelamentos}/{self.limite} hoje)")
+            return True 
         else:
-            print("Limite de cancelamentos atingido")
+            print("Limite de cancelamentos atingido. Não é possível cancelar mais hoje.")
+            return False 

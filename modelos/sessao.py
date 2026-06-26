@@ -12,7 +12,7 @@ class Login:
         self.usuario = usuario
 
     def autenticar(self, email, senha):
-        if self.usuario.email == email and self.usuario.senha == senha:
+        if self.usuario.email == email and self.usuario.verificar_senha(senha):
             if self.usuario.status_conta:
                 print("Login realizado com sucesso!")
                 return True

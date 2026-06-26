@@ -4,6 +4,7 @@ Classe Usuario - Funcionalidade 1: Cadastro de usuário
 """
 
 import uuid
+import hashlib 
 from abc import ABC, abstractmethod 
 from modelos.validacoes import validar_cpf, validar_email, validar_cnh
 
@@ -16,7 +17,7 @@ class Usuario(ABC):
         self.nome_completo = nome_completo
         self.cpf = cpf 
         self.email = email
-        self.senha = senha
+        self.senha = self._hash_senha(senha) 
         self.telefone = telefone
         self.tipo_usuario = tipo_usuario
         self.status_conta = False
@@ -24,6 +25,14 @@ class Usuario(ABC):
     def _gerar_id_unico(self):
         return str(uuid.uuid4())
     
+    def _hash_senha(self, senha):
+        """Gera hash SHA-256 da senha. Nunca armazenamos a senha original."""
+        return hashlib.sha256(senha.encode()).hexdigest()
+    
+    def verificar_senha(self, senha):
+        """Verifica se a senha fornecida corresponde ao hash armazenado."""
+        return self.senha == hashlib.sha256(senha.encode()).hexdigest()
+
     def cadastrar(self):
         print(f"{self.tipo_usuario.title()} {self.nome_completo} criado com ID: {self.id_usuario}")
         return self
@@ -66,7 +75,7 @@ class Passageiro(Usuario):
     def validar_documentos(self):
         if not super().validar_documentos():
             return False
-
+        
         print("Documentos do passageiro validados")
         return True
 

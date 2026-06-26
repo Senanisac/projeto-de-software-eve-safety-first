@@ -8,7 +8,10 @@ from modelos.avaliacao import Avaliacao
 from modelos.controle_cancelamento import ControleCancelamento
 from modelos.suporte import Suporte
 
-from bancos_dados import *
+from bancos_dados.usuarios_bd import salvar_usuarios, atualizar_usuario, listar_usuarios
+from bancos_dados.corridas_bd import salvar_corridas, listar_corridas
+from bancos_dados.pagamentos_bd import salvar_pagamentos, listar_pagamentos
+from bancos_dados.suporte_bd import salvar_mensagens, listar_mensagens
 
 from datetime import date
 
@@ -22,11 +25,11 @@ print("============================\n")
 # 1. CRIAÇÃO DE USUÁRIOS
 # =========================
 passageiro = Passageiro(
-    "Isaac",
+    "Ana Souza",
     "52998224725",
-    "isaac@test.com",
-    "1234",
-    "9999"
+    "ana@test.com",
+    "senha_ana",
+    "81999990001"
 )
 
 motorista = Motorista(
@@ -56,9 +59,11 @@ print("\n--- Validação ---")
 
 if passageiro.validar_documentos():
     passageiro.confirmar_conta()
+    atualizar_usuario(passageiro)
 
 if motorista.validar_documentos():
     motorista.confirmar_conta()
+    atualizar_usuario(motorista)
 else:
     print("Motorista não pode ser confirmado")
 
@@ -76,7 +81,8 @@ motorista.mostrar_dados()
 # =========================
 print("\n--- Login ---")
 login = Login(passageiro)
-login.autenticar("isaac@test.com", "1234")
+login.autenticar("ana@test.com", "senha_ana")      # correto
+login.autenticar("ana@test.com", "senha_errada")   # deve falhar
 
 
 # =========================
@@ -142,7 +148,7 @@ avaliacao.avaliar()
 # =========================
 print("\n--- Cancelamento ---")
 
-controle = ControleCancelamento(2)
+controle = ControleCancelamento(motorista, limite_por_dia=2)
 
 controle.mostrar_motivos()
 
@@ -153,8 +159,9 @@ controle.cancelar_corrida("Emergência")
 controle.cancelar_corrida("Trânsito extremo")
 
 controle.data_atual = date(2026, 1, 1)
-
 controle.cancelar_corrida("Emergência")
+
+print(f"Total cancelamentos do motorista: {motorista.cancelamentos}")
 
 
 # =========================
@@ -210,14 +217,20 @@ for v in veiculos:
 # 13. CONSULTA BANCO
 # =========================
 print("\n--- Usuários Salvos ---")
-print(listar_usuarios())
-
+for u in listar_usuarios():
+    print(f"  [{u['tipo_usuario']}] {u['nome_completo']} | status_conta: {u['status_conta']} | senha: {u['senha'][:20]}...")
+ 
 print("\n--- Corridas Salvas ---")
-print(listar_corridas())
-
+for c in listar_corridas():
+    print(f"  {c['passageiro']} | {c['origem']} → {c['destino']} | R${c['valor']} | {c['status']}")
+ 
 print("\n--- Pagamentos Salvos ---")
-print(listar_pagamentos())
-
+for p in listar_pagamentos():
+    print(f"  {p['metodo']} | R${p['valor']} | {p['status']}")
+ 
 print("\n--- Mensagens Suporte ---")
-print(listar_mensagens())
+for m in listar_mensagens():
+    print(f"  {m['usuario']}: {m['mensagem']} ({m['data_hora']})")
+    
 
+#Compress-Archive -Path . -DestinationPath eve-safety-first.zip

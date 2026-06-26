@@ -1,28 +1,28 @@
 [
     {
-        "id_usuario": "db445401-8ed6-4703-8ed0-f230753d5493",
-        "nome_completo": "Isaac",
+        "id_usuario": "9e39287b-c172-4f20-9444-564f79583957",
+        "nome_completo": "Ana Souza",
         "cpf": "52998224725",
-        "email": "isaac@test.com",
-        "senha": "1234",
-        "telefone": "9999",
+        "email": "ana@test.com",
+        "senha": "89c7056c784cb47a09cdea39249095bd3ccf1eb08201c3f46955f049b2877774",
+        "telefone": "81999990001",
         "tipo_usuario": "passageiro",
-        "status_conta": false,
+        "status_conta": true,
         "historico": []
     },
     {
-        "id_usuario": "3151fc8b-eab9-402f-9c16-a9d15df1168f",
+        "id_usuario": "fe22a928-7f91-49bd-9b9b-16526dbbc686",
         "nome_completo": "João Silva",
         "cpf": "12345678909",
         "email": "joao@email.com",
-        "senha": "senha123",
+        "senha": "55a5e9e78207b4df8699d60886fa070079463547b095d1a05bc719bb4e6cd251",
         "telefone": "11999999999",
         "tipo_usuario": "motorista",
-        "status_conta": false,
+        "status_conta": true,
         "cnh": "59090100108",
         "placa": "ABC1234",
         "modelo_veiculo": "Toyota Corolla",
-        "veiculo": null,
+        "tipo_veiculo": null,
         "cancelamentos": 0
     }
 ]
