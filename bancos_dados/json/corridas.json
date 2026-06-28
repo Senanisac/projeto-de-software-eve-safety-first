@@ -8,5 +8,35 @@
         "status": "confirmada",
         "valor": 32.46,
         "tipo_veiculo": "Carro"
+    },
+    {
+        "id_corrida": "ceb7ded1-8227-44fe-8ea9-b7361d8a6931",
+        "passageiro": "Ana Souza",
+        "origem": "UFAL",
+        "destino": "Av Primeiro de Maio",
+        "distancia": 42.32,
+        "status": "confirmada",
+        "valor": 169.28,
+        "tipo_veiculo": "VIP"
+    },
+    {
+        "id_corrida": "18562ef3-f746-4e5f-af70-b44dcb38f116",
+        "passageiro": "Ana Souza",
+        "origem": "UFAL",
+        "destino": "Av Primeiro de Maio",
+        "distancia": 29.69,
+        "status": "confirmada",
+        "valor": 59.38,
+        "tipo_veiculo": "Carro"
+    },
+    {
+        "id_corrida": "5b5a3143-75ed-4e2e-8141-6819afe29177",
+        "passageiro": "Ana Souza",
+        "origem": "Jaticinho",
+        "destino": "Jardim Tropical",
+        "distancia": 6.38,
+        "status": "confirmada",
+        "valor": 6.38,
+        "tipo_veiculo": "Moto"
     }
 ]

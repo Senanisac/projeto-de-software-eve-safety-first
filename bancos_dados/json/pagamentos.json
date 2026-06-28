@@ -3,5 +3,15 @@
         "valor": 32.46,
         "status": "aprovado",
         "metodo": "PagamentoPix"
+    },
+    {
+        "valor": 59.38,
+        "status": "aprovado",
+        "metodo": "PagamentoPix"
+    },
+    {
+        "valor": 6.38,
+        "status": "aprovado",
+        "metodo": "PagamentoPix"
     }
 ]

@@ -22,7 +22,7 @@
         "cnh": "59090100108",
         "placa": "ABC1234",
         "modelo_veiculo": "Toyota Corolla",
-        "tipo_veiculo": null,
-        "cancelamentos": 0
+        "tipo_veiculo": "Carro",
+        "cancelamentos": 1
     }
 ]
