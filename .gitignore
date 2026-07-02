@@ -1,5 +1,14 @@
 
+@"
+# Banco de dados
+eve.db
+
+# Cache Python
 __pycache__/
-modelos/__pycache__/
-class/__pycache__/
-*.py[cod]venv/.env
+*.pyc
+*.pyo
+
+
+# Variáveis de ambiente
+.env
+"@ | Out-File -FilePath .gitignore -Encoding utf8
