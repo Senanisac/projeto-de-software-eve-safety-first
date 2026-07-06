@@ -31,7 +31,7 @@ app = FastAPI(
     title="Eve Safety First — API",                           # Título na documentação /docs
     description="API REST do sistema de transporte Eve Safety First",
     version="1.0.0",
-    docs_url="/docs"                                          # URL da documentação Swagger
+    docs_url="/docs"                                         # URL da documentação Swagger
 )
  
  
@@ -80,5 +80,7 @@ def pagina_inicial():
 
 
 #uvicorn api.main:app --reload
-#python -m uvicorn api.main:app --reload
-# http://127.0.0.1:8000/docs
+#python -m uvicorn backend.api.main:app --reload
+#http://127.0.0.1:8000/docs
+#npm run dev
+#http://localhost:5173
