@@ -1,0 +1,16 @@
+
+# requirements.txt
+# Lista todas as bibliotecas necessárias para o backend
+# Instale com: pip install -r requirements.txt
+ 
+fastapi==0.115.0                    # Framework principal para criar a API REST
+uvicorn[standard]==0.30.6           # Servidor ASGI para rodar a API
+python-jose[cryptography]==3.3.0    # Para criar e validar tokens JWT
+bcrypt==4.0.1                       # Para fazer hash seguro de senhas
+python-multipart==0.0.9             # Necessário para formulários e upload de arquivos
+sqlalchemy==2.0.35                  # ORM para trabalhar com banco de dados
+pydantic==2.9.2                     # Validação de dados (usado automaticamente com FastAPI)
+pydantic-settings==2.5.2            # Para ler configurações do arquivo .env
+python-dotenv==1.0.1                # Carrega variáveis de ambiente do arquivo .env
+email-validator==2.1.0              # Necessário para o tipo EmailStr do Pydantic
+

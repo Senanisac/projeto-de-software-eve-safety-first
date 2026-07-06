@@ -218,7 +218,7 @@ curl -X POST http://127.0.0.1:8000/corridas \
 
 ## 👨‍💻 Autor
 
-**Isaac Djenonlo**
+**Isaac DJENONLO**
 Estudante de Engenharia da Computação — UFAL
 [GitHub](https://github.com/Senanisac)
 
