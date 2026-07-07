@@ -6,14 +6,15 @@ Gerencia todo o ciclo de vida de uma corrida: criar, listar, consultar e finaliz
  
  
 import random                                                   # Para simular distância aleatória
+from datetime import date                                       # Para verificar e resetar o limite diário
 from fastapi import APIRouter, Depends, HTTPException           # Ferramentas do FastAPI
 from sqlalchemy.orm import Session                              # Para trabalhar com sessões do banco
  
 from ..database import get_db                  # Função para obter sessão do banco
 from ..models.usuario import UsuarioDB         # Modelo do usuário (passageiro autenticado)
 from ..models.corrida import CorridaDB         # Modelo da corrida no banco
-from ..schemas.corrida import CorridaCreate, CorridaResponse   # Schemas de entrada e saída
-from ..auth import exigir_passageiro           # Dependência que garante que é passageiro
+from ..schemas.corrida import CorridaCreate, CorridaResponse, CorridaCancelar  # Schemas de entrada e saída
+from ..auth import exigir_passageiro, exigir_motorista          # Dependência que garante que é passageiro ou motorista
  
  
 # Cria o grupo de rotas para corridas
@@ -28,7 +29,50 @@ TARIFAS = {
 }
  
  
-# ===================== SOLICITAR CORRIDA =====================
+ # ===================== LISTAR CORRIDAS PENDENTES (MOTORISTA) =====================
+@router.get(
+    "/pendentes",                          # URL completa: GET /corridas/pendentes
+    response_model=list[CorridaResponse]   # Retorna lista de corridas pendentes
+)
+def listar_corridas_pendentes(
+    motorista: UsuarioDB = Depends(exigir_motorista),   # Garante que é motorista logado
+    db: Session = Depends(get_db)
+):
+    """
+    Lista todas as corridas com status 'pendente'.
+    O motorista vê as corridas disponíveis para aceitar.
+    """
+
+    # Busca todas as corridas pendentes — de qualquer passageiro
+    return db.query(CorridaDB).filter(
+        CorridaDB.status == "pendente"   # Apenas corridas que ainda não foram aceitas
+    ).all()
+
+
+# ===================== LISTAR CORRIDAS DO MOTORISTA =====================
+@router.get(
+    "/motorista/minhas",                   # URL completa: GET /corridas/motorista/minhas
+    response_model=list[CorridaResponse]
+)
+def listar_corridas_motorista(
+    motorista: UsuarioDB = Depends(exigir_motorista),   # Garante que é motorista logado
+    db: Session = Depends(get_db)
+):
+    """
+    Lista todas as corridas que o motorista cancelou.
+    Permite ao motorista ver o seu histórico de atividade.
+    """
+
+    # Busca corridas canceladas — as únicas associadas diretamente ao motorista por enquanto
+    # Em fases futuras: quando adicionarmos motorista_id à tabela corridas,
+    # poderemos filtrar por motorista específico
+    return db.query(CorridaDB).filter(
+        CorridaDB.status == "cancelada"   # Corridas canceladas pelo motorista
+    ).all()
+
+
+
+# ===================== SOLICITAR CORRIDA (PASSAGEIRO) =====================
 @router.post(
     "",                          # URL completa: POST /corridas
     response_model=CorridaResponse,
@@ -41,6 +85,7 @@ def solicitar_corrida(
 ):
     """
     Passageiro solicita uma nova corrida.
+    Status inicial é 'pendente' — o motorista precisa aceitar antes de confirmar.
     A distância é simulada aleatoriamente — em produção seria calculada por uma API de mapas.
     O valor é calculado automaticamente pelo servidor — o passageiro não define o preço.
     """
@@ -61,7 +106,7 @@ def solicitar_corrida(
         distancia=distancia,           # Distância calculada pelo servidor
         tipo_veiculo=dados.tipo_veiculo,   # Tipo escolhido pelo passageiro
         valor=valor,                   # Valor calculado pelo servidor
-        status="confirmada"            # Corrida já inicia como confirmada (simplificação)
+        status="pendente"            # Corrida já inicia como confirmada (simplificação)
     )
  
     db.add(nova_corrida)      # Prepara para inserção
@@ -71,7 +116,7 @@ def solicitar_corrida(
     return nova_corrida
  
  
-# ===================== LISTAR MINHAS CORRIDAS =====================
+# ===================== LISTAR MINHAS CORRIDAS (PASSAGEIRO) =====================
 @router.get(
     "",                                    # URL completa: GET /corridas
     response_model=list[CorridaResponse]   # Retorna uma lista de corridas
@@ -91,7 +136,7 @@ def listar_minhas_corridas(
     ).all()   # .all() retorna uma lista — diferente de .first() que retorna um único objeto
  
  
-# ===================== DETALHE DE UMA CORRIDA =====================
+# ===================== DETALHE DE UMA CORRIDA (PASSAGEIRO) =====================
 @router.get(
     "/{corrida_id}",           # URL completa: GET /corridas/{id}
     response_model=CorridaResponse
@@ -131,9 +176,8 @@ def finalizar_corrida(
     db: Session = Depends(get_db)
 ):
     """
-    Finaliza uma corrida que está com status 'confirmada'.
-    Somente corridas confirmadas podem ser finalizadas.
-    Após finalizar, o passageiro pode pagar.
+    Passageiro finaliza uma corrida confirmada.
+    Ciclo: pendente → confirmada → finalizada → [pagamento]
     """
  
     # Busca a corrida com as mesmas duas condições de segurança
@@ -157,3 +201,114 @@ def finalizar_corrida(
     db.refresh(corrida)             # Recarrega os dados atualizados do banco
  
     return corrida
+
+
+
+# ===================== ACEITAR CORRIDA (MOTORISTA) =====================
+@router.patch(
+    "/{corrida_id}/aceitar",           # URL completa: PATCH /corridas/{id}/aceitar
+    response_model=CorridaResponse
+)
+def aceitar_corrida(
+    corrida_id: str,
+    motorista: UsuarioDB = Depends(exigir_motorista),   # Garante que é motorista logado
+    db: Session = Depends(get_db)
+):
+    """
+    Motorista aceita uma corrida pendente.
+    Muda o status de 'pendente' para 'confirmada'.
+    """
+
+    # Busca a corrida pelo ID — qualquer corrida pendente pode ser aceita
+    corrida = db.query(CorridaDB).filter(
+        CorridaDB.id == corrida_id   # Busca pelo ID fornecido na URL
+    ).first()
+
+    if not corrida:
+        raise HTTPException(status_code=404, detail="Corrida não encontrada")
+
+    # Só pode aceitar corridas pendentes
+    if corrida.status != "pendente":
+        raise HTTPException(
+            status_code=400,
+            detail=f"Corrida não pode ser aceita — status atual: '{corrida.status}'"
+        )
+
+    corrida.status = "confirmada"   # Muda status para confirmada
+    db.commit()                     # Salva no banco
+    db.refresh(corrida)             # Recarrega os dados atualizados
+
+    return corrida
+
+
+# ===================== CANCELAR CORRIDA (MOTORISTA) =====================
+@router.patch(
+    "/{corrida_id}/cancelar",          # URL completa: PATCH /corridas/{id}/cancelar
+    response_model=CorridaResponse
+)
+def cancelar_corrida(
+    corrida_id: str,
+    dados: CorridaCancelar,                              # Dados com o motivo do cancelamento
+    motorista: UsuarioDB = Depends(exigir_motorista),   # Garante que é motorista logado
+    db: Session = Depends(get_db)
+):
+    """
+    Motorista cancela uma corrida com motivo obrigatório.
+    Regras:
+    - Só pode cancelar corridas 'pendentes' ou 'confirmadas'
+    - O contador só incrementa se a corrida estava 'confirmada'
+      (ou seja, o motorista já tinha aceitado e depois desistiu)
+    - Limite de 5 cancelamentos por dia — reset automático à meia-noite
+    """
+
+    # Busca a corrida pelo ID
+    corrida = db.query(CorridaDB).filter(
+        CorridaDB.id == corrida_id
+    ).first()
+
+    if not corrida:
+        raise HTTPException(status_code=404, detail="Corrida não encontrada")
+
+    # Só pode cancelar corridas pendentes ou confirmadas
+    if corrida.status not in ["pendente", "confirmada"]:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Corrida não pode ser cancelada — status atual: '{corrida.status}'"
+        )
+
+    # ===== RESET DIÁRIO DO CONTADOR =====
+    # Pega a data de hoje no formato "YYYY-MM-DD"
+    hoje = str(date.today())
+
+    # Se o último cancelamento foi num dia diferente de hoje — reseta o contador
+    if motorista.data_ultimo_cancelamento != hoje:
+        motorista.cancelamentos = 0              # Reset do contador
+        motorista.data_ultimo_cancelamento = hoje # Atualiza para hoje
+
+    # ===== VERIFICAR LIMITE DIÁRIO =====
+    # Só verifica o limite se a corrida estava confirmada
+    # Corridas pendentes não contam — motorista nunca se comprometeu
+    LIMITE_CANCELAMENTOS = 5
+    if corrida.status == "confirmada" and motorista.cancelamentos >= LIMITE_CANCELAMENTOS:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Limite de {LIMITE_CANCELAMENTOS} cancelamentos diários atingido. Tente novamente amanhã."
+        )
+
+    # ===== PROCESSAR CANCELAMENTO =====
+    # Guarda o status ANTES de alterar — para verificar depois
+
+    status_anterior = corrida.status   # "pendente" ou "confirmada"
+    corrida.status = "cancelada"   # Muda status para cancelada
+
+    # Só incrementa o contador se o motorista já tinha ACEITO a corrida
+    # Se a corrida ainda estava "pendente", o motorista nunca se comprometeu
+    if status_anterior == "confirmada":
+        motorista.cancelamentos += 1
+        motorista.data_ultimo_cancelamento = hoje
+
+    db.commit()        # Salva todas as mudanças no banco — corrida e motorista
+    db.refresh(corrida)
+
+    return corrida
+

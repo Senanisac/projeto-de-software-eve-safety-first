@@ -59,3 +59,23 @@ class CorridaResponse(BaseModel):
     class Config:
         from_attributes = True   # Permite converter diretamente do objeto SQLAlchemy
  
+
+# ===================== SCHEMA PARA CANCELAMENTO =====================
+class CorridaCancelar(BaseModel):
+    """
+    Dados que o motorista envia para cancelar uma corrida.
+    O motivo é obrigatório — não é permitido cancelar sem justificativa.
+    """
+
+    motivo: str = Field(
+        ...,            # Obrigatório
+        min_length=5,   # Motivo deve ter pelo menos 5 caracteres
+    )
+
+    class Config:
+        json_schema_extra = {
+            "example": {
+                "motivo": "Problema no carro"
+            }
+        }
+

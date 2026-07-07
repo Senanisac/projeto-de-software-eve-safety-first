@@ -119,7 +119,13 @@ class UsuarioDB(Base):
         Integer,                                 # Número inteiro
         default=0                                # Começa em zero — sem cancelamentos
     )
- 
+
+    # Data do último cancelamento — usada para resetar o contador diariamente
+    data_ultimo_cancelamento: Mapped[str | None] = mapped_column(
+        String(10),                              # Formato "YYYY-MM-DD" — ex: "2026-07-07"
+        nullable=True,                           # Null se nunca cancelou
+        default=None                             # Começa sem data
+    )
  
     # ===================== RELACIONAMENTOS =====================
  
