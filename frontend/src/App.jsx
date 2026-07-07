@@ -1,122 +1,98 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from './assets/vite.svg'
-import heroImg from './assets/hero.png'
-import './App.css'
 
-function App() {
-  const [count, setCount] = useState(0)
+// App.jsx - Mapa de navegação da aplicação
+// Define quais telas existem e quais precisam de autenticação
 
-  return (
-    <>
-      <section id="center">
-        <div className="hero">
-          <img src={heroImg} className="base" width="170" height="179" alt="" />
-          <img src={reactLogo} className="framework" alt="React logo" />
-          <img src={viteLogo} className="vite" alt="Vite logo" />
-        </div>
-        <div>
-          <h1>Get started</h1>
-          <p>
-            Edit <code>src/App.jsx</code> and save to test <code>HMR</code>
-          </p>
-        </div>
-        <button
-          type="button"
-          className="counter"
-          onClick={() => setCount((count) => count + 1)}
-        >
-          Count is {count}
-        </button>
-      </section>
+// BrowserRouter — envolve toda a aplicação e ativa o sistema de rotas
+// Routes — container que agrupa todas as rotas
+// Route — define uma rota (URL → componente)
+// Navigate — redireciona para outra URL programaticamente
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 
-      <div className="ticks"></div>
+// Importa todas as telas que vamos criar
+import Login from "./pages/Login";                     // Tela de login
+import Cadastro from "./pages/Cadastro";               // Tela de cadastro
+import Menu from "./pages/Menu";                       // Menu principal após login
+import SolicitarCorrida from "./pages/SolicitarCorrida"; // Tela para solicitar corrida
+import Historico from "./pages/Historico";             // Tela de histórico de corridas
+import Pagamento from "./pages/Pagamento";             // Tela de pagamento
 
-      <section id="next-steps">
-        <div id="docs">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#documentation-icon"></use>
-          </svg>
-          <h2>Documentation</h2>
-          <p>Your questions, answered</p>
-          <ul>
-            <li>
-              <a href="https://vite.dev/" target="_blank">
-                <img className="logo" src={viteLogo} alt="" />
-                Explore Vite
-              </a>
-            </li>
-            <li>
-              <a href="https://react.dev/" target="_blank">
-                <img className="button-icon" src={reactLogo} alt="" />
-                Learn more
-              </a>
-            </li>
-          </ul>
-        </div>
-        <div id="social">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#social-icon"></use>
-          </svg>
-          <h2>Connect with us</h2>
-          <p>Join the Vite community</p>
-          <ul>
-            <li>
-              <a href="https://github.com/vitejs/vite" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#github-icon"></use>
-                </svg>
-                GitHub
-              </a>
-            </li>
-            <li>
-              <a href="https://chat.vite.dev/" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#discord-icon"></use>
-                </svg>
-                Discord
-              </a>
-            </li>
-            <li>
-              <a href="https://x.com/vite_js" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#x-icon"></use>
-                </svg>
-                X.com
-              </a>
-            </li>
-            <li>
-              <a href="https://bsky.app/profile/vite.dev" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#bluesky-icon"></use>
-                </svg>
-                Bluesky
-              </a>
-            </li>
-          </ul>
-        </div>
-      </section>
 
-      <div className="ticks"></div>
-      <section id="spacer"></section>
-    </>
-  )
+// ===================== COMPONENTE DE ROTA PROTEGIDA =====================
+// Envolve telas que só podem ser acedidas por utilizadores logados
+// Se não houver token, redireciona para a tela de login automaticamente
+function RotaProtegida({ children }) {
+  // Verifica se existe um token guardado no localStorage
+  // Token é guardado após login bem-sucedido
+  const token = localStorage.getItem("token");
+
+  // Se não há token — utilizador não está logado
+  // Navigate redireciona para "/" (tela de login) sem mostrar a tela protegida
+  if (!token) {
+    return <Navigate to="/" />;
+  }
+
+  // Se há token — utilizador está logado — mostra a tela normalmente
+  // children é o componente filho passado entre as tags <RotaProtegida>...</RotaProtegida>
+  return children;
 }
 
-export default App
+
+// ===================== COMPONENTE PRINCIPAL =====================
+function App() {
+  return (
+    // BrowserRouter ativa o sistema de rotas em toda a aplicação
+    <BrowserRouter>
+
+      {/* Routes agrupa todas as rotas — só uma rota é mostrada de cada vez */}
+      <Routes>
+
+        {/* Telas públicas — acessíveis sem login */}
+        <Route path="/" element={<Login />} />           {/* localhost:5173/ → Login */}
+        <Route path="/cadastro" element={<Cadastro />} /> {/* localhost:5173/cadastro → Cadastro */}
+
+        {/* Telas protegidas — só acessíveis com login */}
+        {/* RotaProtegida verifica o token antes de mostrar cada tela */}
+
+        <Route
+          path="/menu"
+          element={
+            <RotaProtegida>
+              <Menu />    {/* Só mostra Menu se estiver logado */}
+            </RotaProtegida>
+          }
+        />
+
+        <Route
+          path="/corrida"
+          element={
+            <RotaProtegida>
+              <SolicitarCorrida />    {/* Só mostra SolicitarCorrida se estiver logado */}
+            </RotaProtegida>
+          }
+        />
+
+        <Route
+          path="/historico"
+          element={
+            <RotaProtegida>
+              <Historico />    {/* Só mostra Historico se estiver logado */}
+            </RotaProtegida>
+          }
+        />
+
+        <Route
+          path="/pagamento"
+          element={
+            <RotaProtegida>
+              <Pagamento />    {/* Só mostra Pagamento se estiver logado */}
+            </RotaProtegida>
+          }
+        />
+
+      </Routes>
+    </BrowserRouter>
+  );
+}
+
+export default App; // Exporta para que main.jsx possa importar e renderizar
+
