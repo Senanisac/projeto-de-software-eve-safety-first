@@ -116,15 +116,24 @@ function Menu() {
           </div>
         )}
 
-        {/* Mensagem para motoristas — funcionalidades em breve */}
+        {/* Botões para motoristas */}
         {usuario.tipo === "motorista" && (
-          <div style={estilos.motorista}>
-            <p style={estilos.motoristaTexto}>
-              🔧 Área do motorista em desenvolvimento.
-            </p>
-            <p style={estilos.motoristaTexto}>
-              Em breve: gestão de corridas e cancelamentos.
-            </p>
+          <div style={estilos.botoes}>
+
+            <button
+              onClick={() => navigate("/motorista/corridas")}
+              style={estilos.botao}
+            >
+              🚕 Corridas Disponíveis
+            </button>
+
+            <button
+              onClick={() => navigate("/motorista/historico")}
+              style={estilos.botao}
+            >
+              📋 Meu Histórico
+            </button>
+
           </div>
         )}
 

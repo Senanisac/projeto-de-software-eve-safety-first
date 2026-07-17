@@ -2,9 +2,181 @@
 // pages/SolicitarCorrida.jsx - Tela para solicitar uma corrida
 // Fluxo: preencher dados → ver preço → confirmar → sucesso
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import api from "../api/axios";
+
+
+// ===================== COMPONENTE DE ESPERA =====================
+// Verifica o status da corrida a cada 3 segundos até o motorista aceitar
+function AguardandoMotorista({ corrida }) {
+  const [status, setStatus] = useState(corrida.status);   // Status atual da corrida
+  const [tentativas, setTentativas] = useState(0);        // Contador de verificações
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    // Se já está confirmada — motorista aceitou antes de entrar nesta tela
+    if (status === "confirmada") return;
+
+    // Verifica o status a cada 3 segundos
+    const intervalo = setInterval(async () => {
+      try {
+        const resposta = await api.get(`/corridas/${corrida.id}`);
+        setStatus(resposta.data.status);           // Atualiza o status
+        setTentativas((t) => t + 1);               // Incrementa o contador
+
+        // Se foi confirmada — para de verificar
+        if (resposta.data.status === "confirmada") {
+          clearInterval(intervalo);
+        }
+
+        // Se foi cancelada pelo motorista — para de verificar
+        if (resposta.data.status === "cancelada") {
+          clearInterval(intervalo);
+        }
+
+      } catch (err) {
+        clearInterval(intervalo);   // Para em caso de erro
+      }
+    }, 3000);   // Verifica a cada 3 segundos
+
+    // Limpa o intervalo quando o componente é desmontado
+    return () => clearInterval(intervalo);
+  }, [status]);   // Reinicia se o status mudar
+
+
+  // ===== AGUARDANDO =====
+  if (status === "pendente") {
+    return (
+      <div style={{textAlign: "center", padding: "20px"}}>
+        <p style={{fontSize: "48px", margin: "0"}}>🔍</p>
+        <h2 style={{color: "#1a1a2e", marginBottom: "8px"}}>
+          Procurando motorista...
+        </h2>
+        <p style={{color: "#666", fontSize: "14px", marginBottom: "24px"}}>
+          {corrida.origem} → {corrida.destino}
+        </p>
+        <p style={{
+          color: "#2563eb",
+          fontSize: "28px",
+          fontWeight: "700",
+          marginBottom: "8px"
+        }}>
+          R${corrida.valor.toFixed(2)}
+        </p>
+
+        {/* Animação de pontos */}
+        <p style={{color: "#666", fontSize: "14px", marginBottom: "24px"}}>
+          Aguardando um motorista aceitar
+          {".".repeat((tentativas % 3) + 1)}
+        </p>
+
+        <button
+          onClick={() => navigate("/historico")}
+          style={{
+            padding: "10px 20px",
+            backgroundColor: "white",
+            color: "#374151",
+            border: "1px solid #d1d5db",
+            borderRadius: "8px",
+            cursor: "pointer",
+            fontSize: "14px",
+            fontWeight: "600",
+          }}
+        >
+          Ver histórico
+        </button>
+      </div>
+    );
+  }
+
+
+  // ===== MOTORISTA ENCONTRADO =====
+  if (status === "confirmada") {
+    return (
+      <div style={{textAlign: "center", padding: "20px"}}>
+        <p style={{fontSize: "64px", margin: "0"}}>🎉</p>
+        <h2 style={{color: "#16a34a", marginBottom: "8px"}}>
+          Motorista encontrado!
+        </h2>
+        <p style={{color: "#374151", fontSize: "14px", marginBottom: "24px"}}>
+          O teu motorista está a caminho.<br />
+          Quando chegares ao destino, finaliza a corrida no histórico.
+        </p>
+        <p style={{
+          color: "#2563eb",
+          fontSize: "28px",
+          fontWeight: "700",
+          marginBottom: "24px"
+        }}>
+          R${corrida.valor.toFixed(2)}
+        </p>
+
+        <div style={{display: "flex", flexDirection: "column", gap: "12px"}}>
+          <button
+            onClick={() => navigate("/historico")}
+            style={{
+              padding: "12px",
+              backgroundColor: "#2563eb",
+              color: "white",
+              border: "none",
+              borderRadius: "8px",
+              cursor: "pointer",
+              fontSize: "15px",
+              fontWeight: "600",
+            }}
+          >
+            📋 Ver histórico
+          </button>
+          <button
+            onClick={() => navigate("/menu")}
+            style={{
+              padding: "12px",
+              backgroundColor: "white",
+              color: "#374151",
+              border: "1px solid #d1d5db",
+              borderRadius: "8px",
+              cursor: "pointer",
+              fontSize: "15px",
+              fontWeight: "600",
+            }}
+          >
+            Voltar ao menu
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+
+  // ===== CORRIDA CANCELADA =====
+  return (
+    <div style={{textAlign: "center", padding: "20px"}}>
+      <p style={{fontSize: "48px", margin: "0"}}>❌</p>
+      <h2 style={{color: "#dc2626", marginBottom: "8px"}}>
+        Corrida cancelada
+      </h2>
+      <p style={{color: "#666", fontSize: "14px", marginBottom: "24px"}}>
+        A corrida foi cancelada. Podes solicitar uma nova.
+      </p>
+      <button
+        onClick={() => navigate("/corrida")}
+        style={{
+          padding: "12px",
+          backgroundColor: "#2563eb",
+          color: "white",
+          border: "none",
+          borderRadius: "8px",
+          cursor: "pointer",
+          fontSize: "15px",
+          fontWeight: "600",
+        }}
+      >
+        Solicitar nova corrida
+      </button>
+    </div>
+  );
+}
 
 
 function SolicitarCorrida() {
@@ -58,6 +230,23 @@ function SolicitarCorrida() {
     }
   };
 
+
+  // ===================== CANCELAR CORRIDA AO VER O PREÇO =====================
+  const handleCancelarCorrida = async () => {
+    setCarregando(true);
+    try {
+      // Chama o endpoint de cancelamento do passageiro
+      // Muda o status de "pendente" para "cancelada" no banco
+      await api.patch(`/corridas/${corrida.id}/passageiro/cancelar`);
+    } catch (err) {
+      // Se falhar, mostra o erro mas volta ao menu de qualquer forma
+      console.error("Erro ao cancelar corrida:", err);
+    } finally {
+      setCarregando(false);
+      navigate("/menu");   // Volta ao menu independentemente do resultado
+    }
+  };
+  
 
   // ===================== FUNÇÃO PARA FINALIZAR CORRIDA =====================
   const handleFinalizar = async () => {
@@ -197,17 +386,17 @@ function SolicitarCorrida() {
           {/* Dois botões — finalizar ou cancelar */}
           <div style={{display: "flex", gap: "12px"}}>
             <button
-              onClick={() => navigate("/menu")}  // Volta ao menu sem finalizar
-              style={estilos.botaoCancelar}
-            >
-              Cancelar
-            </button>
-            <button
-              onClick={handleFinalizar}
-              style={carregando ? estilos.botaoDesativado : estilos.botao}
+              onClick={handleCancelarCorrida}    // Cancela na API e volta ao menu
+              style={carregando ? estilos.botaoDesativado : estilos.botaoCancelar}
               disabled={carregando}
             >
-              {carregando ? "Finalizando..." : "✓ Confirmar"}
+              {carregando ? "Cancelando..." : "Cancelar"}
+            </button>
+            <button
+              onClick={() => setFase("sucesso")}
+              style={estilos.botao}
+            >
+              ✓ Confirmar
             </button>
           </div>
 
@@ -221,41 +410,11 @@ function SolicitarCorrida() {
   return (
     <div style={estilos.container}>
       <div style={estilos.caixa}>
-
-        <div style={{textAlign: "center"}}>
-          <p style={{fontSize: "64px", margin: "0"}}>✅</p>
-          <h2 style={estilos.titulo}>Corrida Finalizada!</h2>
-          <p style={{color: "#374151", marginBottom: "8px"}}>
-            {corrida.origem} → {corrida.destino}
-          </p>
-          <p style={{fontSize: "28px", fontWeight: "700", color: "#2563eb", marginBottom: "24px"}}>
-            R${corrida.valor.toFixed(2)}
-          </p>
-          <p style={{color: "#666", fontSize: "14px", marginBottom: "24px"}}>
-            ID da corrida para pagamento:<br />
-            <strong style={{fontSize: "12px", wordBreak: "break-all"}}>{corrida.id}</strong>
-          </p>
-        </div>
-
-        {/* Botões de ação após sucesso */}
-        <div style={{display: "flex", flexDirection: "column", gap: "12px"}}>
-          <button
-            onClick={() => navigate("/pagamento")}  // Vai direto para pagamento
-            style={{...estilos.botao, backgroundColor: "#16a34a"}} // Verde
-          >
-            💳 Pagar agora
-          </button>
-          <button
-            onClick={() => navigate("/menu")}
-            style={estilos.botaoCancelar}
-          >
-            Voltar ao menu
-          </button>
-        </div>
-
+        <AguardandoMotorista corrida={corrida} />
       </div>
     </div>
   );
+  
 }
 
 

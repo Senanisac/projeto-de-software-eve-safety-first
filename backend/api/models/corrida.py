@@ -38,7 +38,15 @@ class CorridaDB(Base):
         ForeignKey("usuarios.id"),               # Chave estrangeira — passageiro deve existir na tabela usuarios
         nullable=False                           # Obrigatório — toda corrida precisa de um passageiro
     )
- 
+
+    # ID do motorista que aceitou a corrida — NULL enquanto nenhum motorista aceitou
+    motorista_id: Mapped[str | None] = mapped_column(
+        String(36),                              # Mesmo tamanho do ID do motorista
+        ForeignKey("usuarios.id"),               # Referencia a tabela usuarios
+        nullable=True,                           # NULL até um motorista aceitar
+        default=None                             # Começa sem motorista atribuído
+    )
+
     # Local de origem da corrida
     origem: Mapped[str] = mapped_column(
         String(200),                             # Até 200 caracteres para o endereço
@@ -88,7 +96,14 @@ class CorridaDB(Base):
     # Acesso direto ao objeto UsuarioDB do passageiro desta corrida
     passageiro: Mapped["UsuarioDB"] = relationship(
         "UsuarioDB",                             # Nome da classe relacionada
+        foreign_keys=[passageiro_id],            # Usa passageiro_id para este relacionamento
         back_populates="corridas"                # Em UsuarioDB, o atributo oposto se chama "corridas"
+    )
+
+    motorista: Mapped["UsuarioDB | None"] = relationship(
+        "UsuarioDB",
+        foreign_keys=[motorista_id],         # Usa motorista_id para este relacionamento
+        back_populates="corridas_aceitas"    # Nome diferente em UsuarioDB
     )
  
     # Acesso direto ao objeto PagamentoDB desta corrida (pode ser None se ainda não foi pago)

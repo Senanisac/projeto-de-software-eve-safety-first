@@ -132,8 +132,16 @@ class UsuarioDB(Base):
     # Lista de corridas do passageiro — acesso direto sem query manual
     corridas: Mapped[list["CorridaDB"]] = relationship(
         "CorridaDB",                             # Nome da classe relacionada
+        foreign_keys="CorridaDB.passageiro_id",   # String — evita importação circular
         back_populates="passageiro",             # Em CorridaDB, o atributo oposto se chama "passageiro"
         cascade="all, delete-orphan"             # Se o usuário for deletado, as corridas também são
+    )
+
+    # Corridas que o motorista aceitou
+    corridas_aceitas: Mapped[list["CorridaDB"]] = relationship(
+        "CorridaDB",
+        foreign_keys="CorridaDB.motorista_id",   # Usa motorista_id
+        back_populates="motorista"
     )
  
     # Lista de pagamentos do usuário — acesso direto sem query manual

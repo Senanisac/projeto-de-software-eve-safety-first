@@ -10,6 +10,7 @@ import api from "../api/axios";                 // Nossa instância configurada 
 function Historico() {
   // ===================== ESTADOS =====================
 
+  const [pagamentos, setPagamentos] = useState([]);
   const [corridas, setCorridas] = useState([]);    // Lista de corridas — começa vazia
   const [carregando, setCarregando] = useState(true); // Começa como true — está a carregar
   const [erro, setErro] = useState("");
@@ -19,11 +20,15 @@ function Historico() {
 
   // ===================== BUSCAR CORRIDAS AO CARREGAR =====================
   useEffect(() => {
-    const buscarCorridas = async () => {
+    const buscarDados = async () => {
       try {
-        // Chama GET /corridas — retorna todas as corridas do utilizador logado
-        const resposta = await api.get("/corridas");
-        setCorridas(resposta.data); // Guarda a lista no estado
+        // Busca corridas e pagamentos em paralelo
+        const [respostaCorridas, respostaPagamentos] = await Promise.all([
+          api.get("/corridas"),
+          api.get("/pagamentos"),
+        ]);
+        setCorridas(respostaCorridas.data);   // Guarda a lista no estado
+        setPagamentos(respostaPagamentos.data);
       } catch (err) {
         setErro("Erro ao carregar histórico. Tente novamente.");
       } finally {
@@ -31,9 +36,27 @@ function Historico() {
       }
     };
 
-    buscarCorridas(); // Executa ao montar o componente
+    buscarDados(); // Executa ao montar o componente
   }, []); // [] = executa apenas uma vez
 
+
+  // ===================== CANCELAR CORRIDA PENDENTE =====================
+  const handleCancelar = async (corridaId) => {
+    const confirmar = window.confirm(
+      "Tem certeza que deseja cancelar esta corrida?"
+    );
+    if (!confirmar) return;
+
+    try {
+      // Chama PATCH /corridas/{id}/passageiro/cancelar
+      await api.patch(`/corridas/${corridaId}/passageiro/cancelar`);
+      // Recarrega a lista após cancelamento
+      const resposta = await api.get("/corridas");
+      setCorridas(resposta.data);
+    } catch (err) {
+      alert(err.response?.data?.detail || "Erro ao cancelar corrida");
+    }
+  };
 
   // ===================== FUNÇÃO PARA COR DO STATUS =====================
   // Retorna um estilo diferente baseado no status da corrida
@@ -115,6 +138,40 @@ function Historico() {
                   {/* Converte a string ISO para data legível */}
                   {new Date(corrida.criado_em).toLocaleString("pt-BR")}
                 </p>
+
+                {/* Botão cancelar — só para corridas pendentes */}
+                  {corrida.status === "pendente" && (
+                    <button
+                      onClick={() => handleCancelar(corrida.id)}
+                      style={estilos.botaoCancelar}
+                    >
+                      ✕ Cancelar corrida
+                    </button>
+                  )}
+
+                  {/* Botão pagar — só para corridas finalizadas E não pagas */}
+                  {corrida.status === "finalizada" &&
+                    !pagamentos.some((p) => p.corrida_id === corrida.id) && (
+                    <button
+                      onClick={() => navigate("/pagamento")}
+                      style={estilos.botaoPagar}
+                    >
+                      💳 Pagar corrida
+                    </button>
+                  )}
+
+                  {/* Mensagem de pago — corrida finalizada e já paga */}
+                  {corrida.status === "finalizada" &&
+                    pagamentos.some((p) => p.corrida_id === corrida.id) && (
+                    <p style={{
+                      marginTop: "8px",
+                      fontSize: "13px",
+                      color: "#16a34a",
+                      fontWeight: "600"
+                    }}>
+                      ✅ Pago
+                    </p>
+                  )}
 
               </div>
             ))}
@@ -236,6 +293,30 @@ const estilos = {
     fontSize: "12px",
     color: "#9ca3af",             // Cinza claro — menos importante
     margin: "0",
+  },
+  botaoCancelar: {
+    marginTop: "8px",
+    padding: "8px 12px",
+    backgroundColor: "#fee2e2",
+    color: "#dc2626",
+    border: "1px solid #fca5a5",
+    borderRadius: "8px",
+    cursor: "pointer",
+    fontSize: "13px",
+    fontWeight: "600",
+    width: "100%",
+  },
+  botaoPagar: {
+    marginTop: "8px",
+    padding: "8px 12px",
+    backgroundColor: "#dcfce7",
+    color: "#16a34a",
+    border: "1px solid #86efac",
+    borderRadius: "8px",
+    cursor: "pointer",
+    fontSize: "13px",
+    fontWeight: "600",
+    width: "100%",
   },
 };
 

@@ -47,14 +47,15 @@ class CorridaResponse(BaseModel):
     """
  
     id             : str               # ID único da corrida (UUID)
-    passageiro_id  : str    # ID do passageiro que solicitou
-    origem         : str           # Local de origem
-    destino        : str          # Local de destino
-    distancia      : float      # Distância em km (calculada pelo servidor)
-    tipo_veiculo   : str     # Tipo do veículo escolhido
-    valor          : float          # Valor total em reais (calculado pelo servidor)
-    status         : str           # Status atual: "pendente", "confirmada", "finalizada" ou "cancelada"
-    criado_em      : datetime   # Data e hora em que a corrida foi criada
+    passageiro_id  : str               # ID do passageiro que solicitou
+    #motorista_id   : str | None        # None até um motorista aceitar
+    origem         : str               # Local de origem
+    destino        : str               # Local de destino
+    distancia      : float             # Distância em km (calculada pelo servidor)
+    tipo_veiculo   : str               # Tipo do veículo escolhido
+    valor          : float             # Valor total em reais (calculado pelo servidor)
+    status         : str               # Status atual: "pendente", "confirmada", "finalizada" ou "cancelada"
+    criado_em      : datetime          # Data e hora em que a corrida foi criada
  
     class Config:
         from_attributes = True   # Permite converter diretamente do objeto SQLAlchemy

@@ -59,16 +59,16 @@ def listar_corridas_motorista(
     db: Session = Depends(get_db)
 ):
     """
-    Lista todas as corridas que o motorista cancelou.
-    Permite ao motorista ver o seu histórico de atividade.
+    Lista todas as corridas associadas ao motorista logado.
+    Inclui corridas confirmadas, canceladas pelo motorista e finalizadas.
+    O motorista só vê as corridas que aceitou — nunca as de outros motoristas.
     """
 
-    # Busca corridas canceladas — as únicas associadas diretamente ao motorista por enquanto
-    # Em fases futuras: quando adicionarmos motorista_id à tabela corridas,
-    # poderemos filtrar por motorista específico
+    # Busca todas as corridas onde motorista_id corresponde ao motorista logado
+    # Inclui todos os status — confirmada, cancelada, finalizada
     return db.query(CorridaDB).filter(
-        CorridaDB.status == "cancelada"   # Corridas canceladas pelo motorista
-    ).all()
+        CorridaDB.motorista_id == motorista.id   # Filtra apenas as corridas deste motorista
+    ).all() 
 
 
 
@@ -164,7 +164,47 @@ def detalhe_corrida(
  
     return corrida
  
- 
+
+# ===================== CANCELAR CORRIDA (PASSAGEIRO) =====================
+@router.patch(
+    "/{corrida_id}/passageiro/cancelar",   # URL completa: PATCH /corridas/{id}/passageiro/cancelar
+    response_model=CorridaResponse
+)
+def passageiro_cancelar_corrida(
+    corrida_id: str,
+    passageiro: UsuarioDB = Depends(exigir_passageiro),   # Garante que é passageiro logado
+    db: Session = Depends(get_db)
+):
+    """
+    Passageiro cancela uma corrida que ainda está pendente.
+    Só é possível cancelar antes de um motorista aceitar.
+    Se um motorista já aceitou — corrida está 'confirmada' — não é possível cancelar.
+    """
+
+    # Busca a corrida verificando que pertence ao passageiro logado
+    corrida = db.query(CorridaDB).filter(
+        CorridaDB.id == corrida_id,
+        CorridaDB.passageiro_id == passageiro.id   # Segurança — só o próprio passageiro pode cancelar
+    ).first()
+
+    if not corrida:
+        raise HTTPException(status_code=404, detail="Corrida não encontrada")
+
+    # Só pode cancelar corridas pendentes — nenhum motorista aceitou ainda
+    if corrida.status != "pendente":
+        raise HTTPException(
+            status_code=400,
+            detail=f"Não é possível cancelar — status atual: '{corrida.status}'. "
+                   f"Só é possível cancelar corridas que ainda não foram aceitas por um motorista."
+        )
+
+    corrida.status = "cancelada"   # Cancelada definitivamente — sai de circulação
+    db.commit()
+    db.refresh(corrida)
+
+    return corrida
+
+
 # ===================== FINALIZAR CORRIDA =====================
 @router.patch(
     "/{corrida_id}/finalizar",   # URL completa: PATCH /corridas/{id}/finalizar
@@ -172,19 +212,19 @@ def detalhe_corrida(
 )
 def finalizar_corrida(
     corrida_id: str,
-    passageiro: UsuarioDB = Depends(exigir_passageiro),
+    motorista: UsuarioDB = Depends(exigir_motorista),   # Motorista finaliza — não o passageiro
     db: Session = Depends(get_db)
 ):
     """
-    Passageiro finaliza uma corrida confirmada.
+    Motorista finaliza uma corrida confirmada.
     Ciclo: pendente → confirmada → finalizada → [pagamento]
     """
  
     # Busca a corrida com as mesmas duas condições de segurança
     corrida = db.query(CorridaDB).filter(
         CorridaDB.id == corrida_id,
-        CorridaDB.passageiro_id == passageiro.id
-    ).first()
+        CorridaDB.motorista_id == motorista.id   # Verifica que é o motorista desta corrida
+    ).first() 
  
     if not corrida:
         raise HTTPException(status_code=404, detail="Corrida não encontrada")
@@ -234,9 +274,10 @@ def aceitar_corrida(
             detail=f"Corrida não pode ser aceita — status atual: '{corrida.status}'"
         )
 
-    corrida.status = "confirmada"   # Muda status para confirmada
-    db.commit()                     # Salva no banco
-    db.refresh(corrida)             # Recarrega os dados atualizados
+    corrida.status = "confirmada"        # Motorista aceitou — corrida confirmada
+    corrida.motorista_id = motorista.id  # Regista o motorista que aceitou
+    db.commit()
+    db.refresh(corrida)
 
     return corrida
 
@@ -255,7 +296,7 @@ def cancelar_corrida(
     """
     Motorista cancela uma corrida com motivo obrigatório.
     Regras:
-    - Só pode cancelar corridas 'pendentes' ou 'confirmadas'
+    - Só pode cancelar corridas 'confirmadas'
     - O contador só incrementa se a corrida estava 'confirmada'
       (ou seja, o motorista já tinha aceitado e depois desistiu)
     - Limite de 5 cancelamentos por dia — reset automático à meia-noite
@@ -268,12 +309,14 @@ def cancelar_corrida(
 
     if not corrida:
         raise HTTPException(status_code=404, detail="Corrida não encontrada")
+    
 
-    # Só pode cancelar corridas pendentes ou confirmadas
-    if corrida.status not in ["pendente", "confirmada"]:
+    # Motorista só pode cancelar corridas que JÁ ACEITOU — status "confirmada"
+    # Corridas "pendentes" nunca foram aceitas — não há nada para cancelar
+    if corrida.status != "confirmada":
         raise HTTPException(
             status_code=400,
-            detail=f"Corrida não pode ser cancelada — status atual: '{corrida.status}'"
+            detail=f"Só é possível cancelar corridas que já foram aceitas. Status atual: '{corrida.status}'"
         )
 
     # ===== RESET DIÁRIO DO CONTADOR =====
@@ -296,19 +339,17 @@ def cancelar_corrida(
         )
 
     # ===== PROCESSAR CANCELAMENTO =====
-    # Guarda o status ANTES de alterar — para verificar depois
+    # Guarda o status ANTES de alterar — necessário para verificar depois
+    status_anterior = corrida.status   # Guarda "pendente" ou "confirmada"
 
-    status_anterior = corrida.status   # "pendente" ou "confirmada"
-    corrida.status = "cancelada"   # Muda status para cancelada
-
-    # Só incrementa o contador se o motorista já tinha ACEITO a corrida
-    # Se a corrida ainda estava "pendente", o motorista nunca se comprometeu
+    # Se o motorista tinha aceitado e agora cancela — corrida volta à circulação
+    # Outros motoristas podem ver e aceitar novamente
     if status_anterior == "confirmada":
-        motorista.cancelamentos += 1
+        corrida.status = "pendente"                # Volta à circulação — não "cancelada"
+        motorista.cancelamentos += 1               # Penaliza o motorista
         motorista.data_ultimo_cancelamento = hoje
 
-    db.commit()        # Salva todas as mudanças no banco — corrida e motorista
+    db.commit()
     db.refresh(corrida)
 
     return corrida
-

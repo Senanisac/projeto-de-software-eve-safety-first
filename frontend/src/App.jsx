@@ -15,6 +15,8 @@ import Menu from "./pages/Menu";                       // Menu principal após l
 import SolicitarCorrida from "./pages/SolicitarCorrida"; // Tela para solicitar corrida
 import Historico from "./pages/Historico";             // Tela de histórico de corridas
 import Pagamento from "./pages/Pagamento";             // Tela de pagamento
+import CorridasMotorista from "./pages/motorista/CorridasMotorista";
+import HistoricoMotorista from "./pages/motorista/HistoricoMotorista";
 
 
 // ===================== COMPONENTE DE ROTA PROTEGIDA =====================
@@ -85,6 +87,24 @@ function App() {
           element={
             <RotaProtegida>
               <Pagamento />    {/* Só mostra Pagamento se estiver logado */}
+            </RotaProtegida>
+          }
+        />
+
+        <Route
+          path="/motorista/corridas"
+          element={
+            <RotaProtegida>
+              <CorridasMotorista />
+            </RotaProtegida>
+          }
+        />
+
+        <Route
+          path="/motorista/historico"
+          element={
+            <RotaProtegida>
+              <HistoricoMotorista />
             </RotaProtegida>
           }
         />
