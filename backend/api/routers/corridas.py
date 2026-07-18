@@ -243,6 +243,42 @@ def finalizar_corrida(
     return corrida
 
 
+# ===================== RECUSAR CORRIDA (MOTORISTA) =====================
+@router.patch(
+    "/{corrida_id}/recusar",           # URL completa: PATCH /corridas/{id}/recusar
+    response_model=CorridaResponse
+)
+def recusar_corrida(
+    corrida_id: str,
+    motorista: UsuarioDB = Depends(exigir_motorista),   # Garante que é motorista logado
+    db: Session = Depends(get_db)
+):
+    """
+    Motorista recusa uma corrida pendente sem penalização.
+    Diferente do cancelar — o motorista nunca aceitou esta corrida.
+    A corrida continua pendente e disponível para outros motoristas.
+    Não conta no limite diário de cancelamentos.
+    """
+
+    corrida = db.query(CorridaDB).filter(
+        CorridaDB.id == corrida_id
+    ).first()
+
+    if not corrida:
+        raise HTTPException(status_code=404, detail="Corrida não encontrada")
+
+    # Só pode recusar corridas pendentes — nunca confirmadas
+    if corrida.status != "pendente":
+        raise HTTPException(
+            status_code=400,
+            detail=f"Só é possível recusar corridas pendentes. Status atual: '{corrida.status}'"
+        )
+
+    # Corrida fica pendente — apenas marca que este motorista recusou
+    # Em fases futuras: guardar lista de motoristas que recusaram para não mostrar de novo
+    # Por agora: a corrida continua visível para todos os motoristas
+    return corrida   # Retorna a corrida sem alterar o status
+
 
 # ===================== ACEITAR CORRIDA (MOTORISTA) =====================
 @router.patch(

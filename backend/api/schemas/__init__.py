@@ -7,4 +7,5 @@ Importa todos os schemas para facilitar o acesso nos outros módulos.
 from .usuario import PassageiroCreate, MotoristaCreate, UsuarioResponse, LoginRequest, Token, TokenData
 from .corrida import CorridaCreate, CorridaResponse, CorridaCancelar  
 from .pagamento import PagamentoCreate, PagamentoResponse
+from .avaliacao import AvaliacaoCreate, AvaliacaoResponse
 

@@ -65,6 +65,26 @@ function CorridasMotorista() {
   };
 
 
+  // ===================== RECUSAR CORRIDA =====================
+  const handleRecusar = async (corridaId) => {
+    const confirmar = window.confirm(
+      "Recusar esta corrida?\nEla continuará disponível para outros motoristas."
+    );
+    if (!confirmar) return;
+
+    setErro("");
+    setMensagem("");
+    try {
+      // Chama PATCH /corridas/{id}/recusar
+      await api.patch(`/corridas/${corridaId}/recusar`);
+      setMensagem("Corrida recusada. Ela continua disponível para outros motoristas.");
+      buscarCorridas(); // Atualiza a lista
+    } catch (err) {
+      setErro(err.response?.data?.detail || "Erro ao recusar corrida");
+    }
+  };
+
+
   // ===================== CANCELAR CORRIDA =====================
   const handleCancelar = async (corridaId) => {
     const confirmar = window.confirm(
@@ -211,6 +231,12 @@ function CorridasMotorista() {
                         style={estilos.botaoAceitar}
                       >
                         ✓ Aceitar
+                      </button>
+                      <button
+                        onClick={() => handleRecusar(corrida.id)}
+                        style={estilos.botaoRecusar}
+                      >
+                        ✕ Recusar
                       </button>
                     </div>
 
@@ -362,6 +388,17 @@ const estilos = {
     backgroundColor: "#16a34a",
     color: "white",
     border: "none",
+    borderRadius: "8px",
+    cursor: "pointer",
+    fontWeight: "600",
+    fontSize: "14px",
+  },
+  botaoRecusar: {
+    flex: 1,
+    padding: "10px",
+    backgroundColor: "white",
+    color: "#374151",
+    border: "1px solid #d1d5db",
     borderRadius: "8px",
     cursor: "pointer",
     fontWeight: "600",

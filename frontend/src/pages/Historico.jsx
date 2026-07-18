@@ -11,6 +11,7 @@ function Historico() {
   // ===================== ESTADOS =====================
 
   const [pagamentos, setPagamentos] = useState([]);
+  const [avaliacoes, setAvaliacoes] = useState([]);
   const [corridas, setCorridas] = useState([]);    // Lista de corridas — começa vazia
   const [carregando, setCarregando] = useState(true); // Começa como true — está a carregar
   const [erro, setErro] = useState("");
@@ -22,13 +23,15 @@ function Historico() {
   useEffect(() => {
     const buscarDados = async () => {
       try {
-        // Busca corridas e pagamentos em paralelo
-        const [respostaCorridas, respostaPagamentos] = await Promise.all([
+        // Busca corridas, pagamentos e avalicoes em paralelo
+        const [respostaCorridas, respostaPagamentos, respostaAvaliacoes] = await Promise.all([
           api.get("/corridas"),
           api.get("/pagamentos"),
+          api.get("/avaliacoes/minhas"),      // Busca avaliações já feitas
         ]);
         setCorridas(respostaCorridas.data);   // Guarda a lista no estado
         setPagamentos(respostaPagamentos.data);
+        setAvaliacoes(respostaAvaliacoes.data);
       } catch (err) {
         setErro("Erro ao carregar histórico. Tente novamente.");
       } finally {
@@ -160,17 +163,31 @@ function Historico() {
                     </button>
                   )}
 
-                  {/* Mensagem de pago — corrida finalizada e já paga */}
+                  {/* Corrida paga — mostrar botão avaliar ou "avaliado" */}
                   {corrida.status === "finalizada" &&
                     pagamentos.some((p) => p.corrida_id === corrida.id) && (
-                    <p style={{
-                      marginTop: "8px",
-                      fontSize: "13px",
-                      color: "#16a34a",
-                      fontWeight: "600"
-                    }}>
-                      ✅ Pago
-                    </p>
+                    <>
+                      <p style={{marginTop: "8px", fontSize: "13px", color: "#16a34a", fontWeight: "600"}}>
+                        ✅ Pago
+                      </p>
+
+                      {/* Botão avaliar — só se ainda não avaliou */}
+                      {!avaliacoes.some((a) => a.corrida_id === corrida.id) && (
+                        <button
+                          onClick={() => navigate("/avaliacao", { state: { corridaId: corrida.id } })}
+                          style={estilos.botaoAvaliar}
+                        >
+                          ⭐ Avaliar motorista
+                        </button>
+                      )}
+
+                      {/* Já avaliado */}
+                      {avaliacoes.some((a) => a.corrida_id === corrida.id) && (
+                        <p style={{marginTop: "4px", fontSize: "13px", color: "#f59e0b", fontWeight: "600"}}>
+                          ⭐ Avaliado
+                        </p>
+                      )}
+                    </>
                   )}
 
               </div>
@@ -312,6 +329,18 @@ const estilos = {
     backgroundColor: "#dcfce7",
     color: "#16a34a",
     border: "1px solid #86efac",
+    borderRadius: "8px",
+    cursor: "pointer",
+    fontSize: "13px",
+    fontWeight: "600",
+    width: "100%",
+  },
+  botaoAvaliar: {
+    marginTop: "8px",
+    padding: "8px 12px",
+    backgroundColor: "#fef9c3",
+    color: "#854d0e",
+    border: "1px solid #fde68a",
     borderRadius: "8px",
     cursor: "pointer",
     fontSize: "13px",

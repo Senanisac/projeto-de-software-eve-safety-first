@@ -9,4 +9,6 @@ A ordem de importação importa — pagamento antes de corrida antes de usuario.
 from .pagamento import PagamentoDB   # Importado primeiro — não depende dos outros
 from .corrida import CorridaDB       # Importado segundo — depende de PagamentoDB
 from .usuario import UsuarioDB       # Importado por último — depende dos dois acima
- 
+from .avaliacao import AvaliacaoDB 
+
+
