@@ -15,7 +15,8 @@ import Menu from "./pages/Menu";                       // Menu principal após l
 import SolicitarCorrida from "./pages/SolicitarCorrida"; // Tela para solicitar corrida
 import Historico from "./pages/Historico";             // Tela de histórico de corridas
 import Pagamento from "./pages/Pagamento";             // Tela de pagamento
-import Avaliacao from "./pages/Avaliacao";            // Telq de avaliacao
+import Avaliacao from "./pages/Avaliacao";            // Tela de avaliacao
+import Suporte from "./pages/Suporte";               // Tela de suporte
 import CorridasMotorista from "./pages/motorista/CorridasMotorista";
 import HistoricoMotorista from "./pages/motorista/HistoricoMotorista";
 
@@ -115,6 +116,15 @@ function App() {
           element={
             <RotaProtegida>
               <Avaliacao />
+            </RotaProtegida>
+          }
+        />
+
+         <Route
+          path="/suporte"
+          element={
+            <RotaProtegida>
+              <Suporte />
             </RotaProtegida>
           }
         />

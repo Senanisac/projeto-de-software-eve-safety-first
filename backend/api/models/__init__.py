@@ -10,5 +10,6 @@ from .pagamento import PagamentoDB   # Importado primeiro — não depende dos o
 from .corrida import CorridaDB       # Importado segundo — depende de PagamentoDB
 from .usuario import UsuarioDB       # Importado por último — depende dos dois acima
 from .avaliacao import AvaliacaoDB 
+from .suporte import SuporteDB
 
 

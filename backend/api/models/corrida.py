@@ -52,18 +52,47 @@ class CorridaDB(Base):
         String(200),                             # Até 200 caracteres para o endereço
         nullable=False                           # Obrigatório — toda corrida precisa de uma origem
     )
+
+    # Latitude da origem
+    origem_lat: Mapped[float | None] = mapped_column(
+        Float, 
+        nullable=True, 
+        default=None
+    )  
+
+    # Longitude da origem
+    origem_lng: Mapped[float | None] = mapped_column(
+        Float, 
+        nullable=True, 
+        default=None
+    )  
  
     # Local de destino da corrida
     destino: Mapped[str] = mapped_column(
         String(200),                             # Até 200 caracteres para o endereço
         nullable=False                           # Obrigatório — toda corrida precisa de um destino
     )
- 
+
+    # Latitude do destino
+    destino_lat: Mapped[float | None] = mapped_column(
+        Float,
+        nullable=True,
+        default=None
+    )  
+
+    # Longitude do destino
+    destino_lng: Mapped[float | None] = mapped_column(
+        Float, 
+        nullable=True, 
+        default=None
+    )  
+
     # Distância calculada em quilômetros
     distancia: Mapped[float] = mapped_column(
         Float,                                   # Número decimal (ex: 12.5 km)
         default=0.0                              # Começa em zero — calculado pelo servidor
     )
+    
  
     # Tipo do veículo escolhido pelo passageiro
     tipo_veiculo: Mapped[str] = mapped_column(

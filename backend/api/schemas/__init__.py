@@ -8,4 +8,5 @@ from .usuario import PassageiroCreate, MotoristaCreate, UsuarioResponse, LoginRe
 from .corrida import CorridaCreate, CorridaResponse, CorridaCancelar  
 from .pagamento import PagamentoCreate, PagamentoResponse
 from .avaliacao import AvaliacaoCreate, AvaliacaoResponse
+from .suporte import SuporteCreate, SuporteResponse 
 

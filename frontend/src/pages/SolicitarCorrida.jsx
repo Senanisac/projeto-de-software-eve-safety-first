@@ -1,10 +1,11 @@
 
 // pages/SolicitarCorrida.jsx - Tela para solicitar uma corrida
-// Fluxo: preencher dados → ver preço → confirmar → sucesso
+// Fluxo: escolher veículo → mapa → ver preço → confirmar → aguardar motorista
 
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import api from "../api/axios";
+import Mapa from "./Mapa";
 
 
 // ===================== COMPONENTE DE ESPERA =====================
@@ -53,7 +54,7 @@ function AguardandoMotorista({ corrida }) {
         <h2 style={{color: "#1a1a2e", marginBottom: "8px"}}>
           Procurando motorista...
         </h2>
-        <p style={{color: "#666", fontSize: "14px", marginBottom: "24px"}}>
+        <p style={{color: "#666", fontSize: "14px", marginBottom: "8px"}}>
           {corrida.origem} → {corrida.destino}
         </p>
         <p style={{
@@ -71,21 +72,10 @@ function AguardandoMotorista({ corrida }) {
           {".".repeat((tentativas % 3) + 1)}
         </p>
 
-        <button
-          onClick={() => navigate("/historico")}
-          style={{
-            padding: "10px 20px",
-            backgroundColor: "white",
-            color: "#374151",
-            border: "1px solid #d1d5db",
-            borderRadius: "8px",
-            cursor: "pointer",
-            fontSize: "14px",
-            fontWeight: "600",
-          }}
-        >
+        <button onClick={() => navigate("/historico")} style={estilos.botaoSecundario}>
           Ver histórico
         </button>
+        
       </div>
     );
   }
@@ -99,9 +89,9 @@ function AguardandoMotorista({ corrida }) {
         <h2 style={{color: "#16a34a", marginBottom: "8px"}}>
           Motorista encontrado!
         </h2>
-        <p style={{color: "#374151", fontSize: "14px", marginBottom: "24px"}}>
+        <p style={{color: "#374151", fontSize: "14px", marginBottom: "8px"}}>
           O teu motorista está a caminho.<br />
-          Quando chegares ao destino, finaliza a corrida no histórico.
+          Quando chegare ao destino, paga a corrida no histórico.
         </p>
         <p style={{
           color: "#2563eb",
@@ -113,34 +103,10 @@ function AguardandoMotorista({ corrida }) {
         </p>
 
         <div style={{display: "flex", flexDirection: "column", gap: "12px"}}>
-          <button
-            onClick={() => navigate("/historico")}
-            style={{
-              padding: "12px",
-              backgroundColor: "#2563eb",
-              color: "white",
-              border: "none",
-              borderRadius: "8px",
-              cursor: "pointer",
-              fontSize: "15px",
-              fontWeight: "600",
-            }}
-          >
+          <button onClick={() => navigate("/historico")} style={estilos.botao}>
             📋 Ver histórico
           </button>
-          <button
-            onClick={() => navigate("/menu")}
-            style={{
-              padding: "12px",
-              backgroundColor: "white",
-              color: "#374151",
-              border: "1px solid #d1d5db",
-              borderRadius: "8px",
-              cursor: "pointer",
-              fontSize: "15px",
-              fontWeight: "600",
-            }}
-          >
+          <button onClick={() => navigate("/menu")} style={estilos.botaoSecundario}>
             Voltar ao menu
           </button>
         </div>
@@ -157,21 +123,9 @@ function AguardandoMotorista({ corrida }) {
         Corrida cancelada
       </h2>
       <p style={{color: "#666", fontSize: "14px", marginBottom: "24px"}}>
-        A corrida foi cancelada. Podes solicitar uma nova.
+        A corrida foi cancelada. Pode solicitar uma nova.
       </p>
-      <button
-        onClick={() => navigate("/corrida")}
-        style={{
-          padding: "12px",
-          backgroundColor: "#2563eb",
-          color: "white",
-          border: "none",
-          borderRadius: "8px",
-          cursor: "pointer",
-          fontSize: "15px",
-          fontWeight: "600",
-        }}
-      >
+      <button onClick={() => navigate("/corrida")} style={estilos.botao}>
         Solicitar nova corrida
       </button>
     </div>
@@ -179,49 +133,47 @@ function AguardandoMotorista({ corrida }) {
 }
 
 
+// ===================== COMPONENTE PRINCIPAL =====================
+
 function SolicitarCorrida() {
   // ===================== ESTADOS =====================
-
-  // Campos do formulário
-  const [origem, setOrigem] = useState("");
-  const [destino, setDestino] = useState("");
-  const [tipoVeiculo, setTipoVeiculo] = useState("Carro"); // Valor padrão
-
-  // Controlo da fase da tela
-  // "formulario" → "confirmacao" → "sucesso"
-  const [fase, setFase] = useState("formulario");
-
-  // Dados da corrida criada — preenchidos após a resposta da API
+  const [tipoVeiculo, setTipoVeiculo] = useState("Carro");
+  const [fase, setFase] = useState("veiculo");   // "veiculo" → "mapa" → "confirmacao" → "sucesso"
+  const [dadosMapa, setDadosMapa] = useState(null);  // Dados vindos do mapa
   const [corrida, setCorrida] = useState(null);
-
-  // Estados de controlo
   const [erro, setErro] = useState("");
   const [carregando, setCarregando] = useState(false);
 
   const navigate = useNavigate();
 
-
   // ===================== TARIFAS (para mostrar ao utilizador) =====================
   // Mesmo dicionário que existe no backend — só para exibição
   const tarifas = { Moto: 1.0, Carro: 2.0, VIP: 4.0 };
 
+  // ===================== QUANDO MAPA CONFIRMA =====================
+  const handleMapaConfirmar = (dados) => {
+    setDadosMapa(dados);
+    setFase("confirmacao");
+  };
 
-  // ===================== FUNÇÃO PARA SOLICITAR CORRIDA =====================
-  const handleSolicitar = async (e) => {
-    e.preventDefault();
+  // ===================== SOLICITAR CORRIDA =====================
+  const handleSolicitar = async () => {
     setErro("");
     setCarregando(true);
 
     try {
-      // Chama POST /corridas com os dados do formulário
       const resposta = await api.post("/corridas", {
-        origem,
-        destino,
-        tipo_veiculo: tipoVeiculo, // A API espera "tipo_veiculo" com underscore
+        origem: dadosMapa.origem,
+        origem_lat: dadosMapa.origem_lat,
+        origem_lng: dadosMapa.origem_lng,
+        destino: dadosMapa.destino,
+        destino_lat: dadosMapa.destino_lat,
+        destino_lng: dadosMapa.destino_lng,
+        tipo_veiculo: tipoVeiculo,
       });
 
-      setCorrida(resposta.data); // Guarda os dados da corrida criada
-      setFase("confirmacao");    // Avança para a fase de confirmação
+      setCorrida(resposta.data);
+      setFase("sucesso");
 
     } catch (err) {
       setErro(err.response?.data?.detail || "Erro ao solicitar corrida");
@@ -248,174 +200,142 @@ function SolicitarCorrida() {
   };
   
 
-  // ===================== FUNÇÃO PARA FINALIZAR CORRIDA =====================
-  const handleFinalizar = async () => {
-    setErro("");
-    setCarregando(true);
-
-    try {
-      // Chama PATCH /corridas/{id}/finalizar para mudar status para "finalizada"
-      await api.patch(`/corridas/${corrida.id}/finalizar`);
-      setFase("sucesso"); // Avança para a fase de sucesso
-
-    } catch (err) {
-      setErro(err.response?.data?.detail || "Erro ao finalizar corrida");
-    } finally {
-      setCarregando(false);
-    }
-  };
-
-
-  // ===================== INTERFACE — FASE FORMULÁRIO =====================
-  if (fase === "formulario") {
+  // ===================== FASE ESCOLHER VEÍCULO =====================
+  if (fase === "veiculo") {
     return (
       <div style={estilos.container}>
         <div style={estilos.caixa}>
-
-          {/* Botão voltar */}
-          <button onClick={() => navigate("/menu")} style={estilos.botaoVoltar}>
-            ← Voltar
-          </button>
-
+          <button onClick={() => navigate("/menu")} style={estilos.botaoVoltar}>← Voltar</button>
           <h2 style={estilos.titulo}>🚕 Solicitar Corrida</h2>
+          <p style={{color: "#666", fontSize: "14px", marginBottom: "20px"}}>
+            Escolhe o tipo de veículo para continuar.
+          </p>
 
-          {erro && <p style={estilos.erro}>{erro}</p>}
-
-          <form onSubmit={handleSolicitar}>
-
-            <div style={estilos.campo}>
-              <label style={estilos.label}>Origem</label>
-              <input
-                type="text"
-                value={origem}
-                onChange={(e) => setOrigem(e.target.value)}
-                placeholder="Ex: UFAL — Maceió"
-                style={estilos.input}
-                required
-              />
-            </div>
-
-            <div style={estilos.campo}>
-              <label style={estilos.label}>Destino</label>
-              <input
-                type="text"
-                value={destino}
-                onChange={(e) => setDestino(e.target.value)}
-                placeholder="Ex: Av. Primeiro de Maio"
-                style={estilos.input}
-                required
-              />
-            </div>
-
-            {/* Seleção do tipo de veículo com cards visuais */}
-            <div style={estilos.campo}>
-              <label style={estilos.label}>Tipo de veículo</label>
-              <div style={estilos.veiculos}>
-
-                {/* Itera sobre os 3 tipos de veículo */}
-                {["Moto", "Carro", "VIP"].map((tipo) => (
-                  <div
-                    key={tipo}                                    // key é obrigatório em listas React
-                    onClick={() => setTipoVeiculo(tipo)}          // Seleciona o veículo ao clicar
-                    style={tipoVeiculo === tipo ? estilos.veiculoAtivo : estilos.veiculoInativo}
-                  >
-                    {/* Emoji diferente para cada tipo */}
-                    <p style={estilos.veiculoEmoji}>
-                      {tipo === "Moto" ? "🏍️" : tipo === "Carro" ? "🚗" : "⭐"}
-                    </p>
-                    <p style={estilos.veiculoNome}>{tipo}</p>
-                    <p style={estilos.veiculoTarifa}>R${tarifas[tipo].toFixed(2)}/km</p>
-                  </div>
-                ))}
-
+          <div style={estilos.veiculos}>
+            {["Moto", "Carro", "VIP"].map((tipo) => (
+              <div
+                key={tipo}
+                onClick={() => setTipoVeiculo(tipo)}
+                style={tipoVeiculo === tipo ? estilos.veiculoAtivo : estilos.veiculoInativo}
+              >
+                <p style={estilos.veiculoEmoji}>
+                  {tipo === "Moto" ? "🏍️" : tipo === "Carro" ? "🚗" : "⭐"}
+                </p>
+                <p style={estilos.veiculoNome}>{tipo}</p>
+                <p style={estilos.veiculoTarifa}>R${tarifas[tipo].toFixed(2)}/km</p>
               </div>
-            </div>
+            ))}
+          </div>
 
-            <button
-              type="submit"
-              style={carregando ? estilos.botaoDesativado : estilos.botao}
-              disabled={carregando}
-            >
-              {carregando ? "Calculando..." : "Ver preço"}
-            </button>
-
-          </form>
+          <button onClick={() => setFase("mapa")} style={estilos.botao}>
+            Escolher no mapa →
+          </button>
         </div>
       </div>
     );
   }
 
 
-  // ===================== INTERFACE — FASE CONFIRMAÇÃO =====================
+  // ===================== FASE MAPA =====================
+  if (fase === "mapa") {
+    return (
+      <div style={{position: "relative", height: "100vh"}}>
+        {/* Botão voltar sobreposto ao mapa */}
+        <button
+          onClick={() => setFase("veiculo")}
+          style={{
+            position: "absolute",
+            top: "16px",
+            left: "356px",
+            zIndex: 1001,
+            background: "white",
+            border: "1px solid #d1d5db",
+            borderRadius: "8px",
+            padding: "8px 12px",
+            cursor: "pointer",
+            fontWeight: "600",
+            fontSize: "13px",
+            color: "#2563eb",
+            boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
+          }}
+        >
+          ← Voltar
+        </button>
+        <Mapa onConfirmar={handleMapaConfirmar} />
+      </div>
+    );
+  }
+
+  // ===================== FASE CONFIRMAÇÃO =====================
   if (fase === "confirmacao") {
+    const valorEstimado = dadosMapa
+      ? (dadosMapa.distancia * tarifas[tipoVeiculo]).toFixed(2)
+      : "0.00";
+
     return (
       <div style={estilos.container}>
         <div style={estilos.caixa}>
-
           <h2 style={estilos.titulo}>📋 Confirmar Corrida</h2>
 
           {erro && <p style={estilos.erro}>{erro}</p>}
 
-          {/* Resumo da corrida calculada pela API */}
           <div style={estilos.resumo}>
             <div style={estilos.resumoLinha}>
               <span style={estilos.resumoLabel}>Origem</span>
-              <span style={estilos.resumoValor}>{corrida.origem}</span>
+              <span style={estilos.resumoValor}>{dadosMapa?.origem}</span>
             </div>
             <div style={estilos.resumoLinha}>
               <span style={estilos.resumoLabel}>Destino</span>
-              <span style={estilos.resumoValor}>{corrida.destino}</span>
+              <span style={estilos.resumoValor}>{dadosMapa?.destino}</span>
             </div>
             <div style={estilos.resumoLinha}>
               <span style={estilos.resumoLabel}>Veículo</span>
-              <span style={estilos.resumoValor}>{corrida.tipo_veiculo}</span>
+              <span style={estilos.resumoValor}>{tipoVeiculo}</span>
             </div>
             <div style={estilos.resumoLinha}>
               <span style={estilos.resumoLabel}>Distância</span>
-              <span style={estilos.resumoValor}>{corrida.distancia} km</span>
+              <span style={estilos.resumoValor}>{dadosMapa?.distancia} km</span>
             </div>
-            {/* Valor destacado */}
             <div style={{...estilos.resumoLinha, borderTop: "2px solid #e5e7eb", paddingTop: "12px", marginTop: "4px"}}>
-              <span style={{...estilos.resumoLabel, fontWeight: "700", fontSize: "16px"}}>Total</span>
+              <span style={{...estilos.resumoLabel, fontWeight: "700", fontSize: "16px"}}>Total estimado</span>
               <span style={{...estilos.resumoValor, fontWeight: "700", fontSize: "20px", color: "#2563eb"}}>
-                R${corrida.valor.toFixed(2)}
+                R${valorEstimado}
               </span>
             </div>
           </div>
 
-          {/* Dois botões — finalizar ou cancelar */}
           <div style={{display: "flex", gap: "12px"}}>
             <button
-              onClick={handleCancelarCorrida}    // Cancela na API e volta ao menu
-              style={carregando ? estilos.botaoDesativado : estilos.botaoCancelar}
-              disabled={carregando}
+              onClick={() => setFase("mapa")}
+              style={estilos.botaoSecundario}
             >
-              {carregando ? "Cancelando..." : "Cancelar"}
+              ← Editar
             </button>
             <button
-              onClick={() => setFase("sucesso")}
-              style={estilos.botao}
+              onClick={handleSolicitar}
+              style={carregando ? estilos.botaoDesativado : estilos.botao}
+              disabled={carregando}
             >
-              ✓ Confirmar
+              {carregando ? "Solicitando..." : "✓ Confirmar"}
             </button>
           </div>
 
-        </div>
+          </div>
       </div>
     );
   }
 
 
-  // ===================== INTERFACE — FASE SUCESSO =====================
+  // ===================== FASE SUCESSO =====================
   return (
     <div style={estilos.container}>
       <div style={estilos.caixa}>
-        <AguardandoMotorista corrida={corrida} />
+        {corrida && <AguardandoMotorista corrida={corrida} />}
       </div>
     </div>
   );
-  
 }
+
 
 
 // ===================== ESTILOS =====================
@@ -460,34 +380,16 @@ const estilos = {
     fontSize: "14px",
     textAlign: "center",
   },
-  campo: {
-    marginBottom: "16px",
-  },
-  label: {
-    display: "block",
-    marginBottom: "6px",
-    color: "#374151",
-    fontSize: "14px",
-    fontWeight: "600",
-  },
-  input: {
-    width: "100%",
-    padding: "10px 12px",
-    border: "1px solid #d1d5db",
-    borderRadius: "8px",
-    fontSize: "14px",
-    outline: "none",
-    boxSizing: "border-box",
-  },
   veiculos: {
     display: "flex",
-    gap: "10px",                  // Espaço entre os cards
+    gap: "10px",
+    marginBottom: "24px",
   },
   veiculoAtivo: {
     flex: 1,
     padding: "12px 8px",
-    backgroundColor: "#eff6ff",   // Fundo azul claro — selecionado
-    border: "2px solid #2563eb",  // Borda azul — selecionado
+    backgroundColor: "#eff6ff",
+    border: "2px solid #2563eb",
     borderRadius: "8px",
     cursor: "pointer",
     textAlign: "center",
@@ -496,26 +398,14 @@ const estilos = {
     flex: 1,
     padding: "12px 8px",
     backgroundColor: "white",
-    border: "2px solid #e5e7eb",  // Borda cinza — não selecionado
+    border: "2px solid #e5e7eb",
     borderRadius: "8px",
     cursor: "pointer",
     textAlign: "center",
   },
-  veiculoEmoji: {
-    fontSize: "24px",
-    margin: "0 0 4px 0",
-  },
-  veiculoNome: {
-    fontSize: "13px",
-    fontWeight: "600",
-    color: "#374151",
-    margin: "0 0 2px 0",
-  },
-  veiculoTarifa: {
-    fontSize: "11px",
-    color: "#666",
-    margin: "0",
-  },
+  veiculoEmoji: { fontSize: "24px", margin: "0 0 4px 0" },
+  veiculoNome: { fontSize: "13px", fontWeight: "600", color: "#374151", margin: "0 0 2px 0" },
+  veiculoTarifa: { fontSize: "11px", color: "#666", margin: "0" },
   botao: {
     flex: 1,
     width: "100%",
@@ -542,7 +432,7 @@ const estilos = {
     cursor: "not-allowed",
     marginTop: "8px",
   },
-  botaoCancelar: {
+  botaoSecundario: {
     flex: 1,
     padding: "12px",
     backgroundColor: "white",
@@ -562,20 +452,11 @@ const estilos = {
   },
   resumoLinha: {
     display: "flex",
-    justifyContent: "space-between",  // Label à esquerda, valor à direita
+    justifyContent: "space-between",
     padding: "6px 0",
   },
-  resumoLabel: {
-    color: "#666",
-    fontSize: "14px",
-  },
-  resumoValor: {
-    color: "#1a1a2e",
-    fontSize: "14px",
-    fontWeight: "600",
-  },
+  resumoLabel: { color: "#666", fontSize: "14px" },
+  resumoValor: { color: "#1a1a2e", fontSize: "14px", fontWeight: "600" },
 };
 
-
-export default SolicitarCorrida;
-
+export default SolicitarCorrida; 

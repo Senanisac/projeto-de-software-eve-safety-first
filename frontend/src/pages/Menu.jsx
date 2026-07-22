@@ -113,6 +113,13 @@ function Menu() {
               💳 Meus Pagamentos
             </button>
 
+            <button
+              onClick={() => navigate("/suporte")}
+              style={{...estilos.botao, backgroundColor: "#6366f1"}}
+            >
+              🎧 Suporte
+            </button>
+
           </div>
         )}
 
@@ -132,6 +139,13 @@ function Menu() {
               style={estilos.botao}
             >
               📋 Meu Histórico
+            </button>
+
+            <button
+              onClick={() => navigate("/suporte")}
+              style={{...estilos.botao, backgroundColor: "#6366f1"}}
+            >
+              🎧 Suporte
             </button>
 
           </div>

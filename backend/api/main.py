@@ -14,10 +14,10 @@ from .database import engine, Base
  
 # IMPORTANTE: importar todos os modelos ANTES do create_all()
 # O SQLAlchemy precisa conhecer todas as tabelas para criar as relações corretamente
-from .models import PagamentoDB, CorridaDB, UsuarioDB, AvaliacaoDB   # noqa: F401 — importado por efeito colateral
+from .models import PagamentoDB, CorridaDB, UsuarioDB, AvaliacaoDB, SuporteDB  # noqa: F401 — importado por efeito colateral
  
 # Importamos os grupos de rotas (routers)
-from .routers import usuarios, corridas, pagamentos, avaliacoes
+from .routers import usuarios, corridas, pagamentos, avaliacoes, suporte
  
  
 # ===================== CRIAÇÃO DAS TABELAS NO BANCO =====================
@@ -71,6 +71,12 @@ app.include_router(
     avaliacoes.router,
     prefix="/avaliacoes",
     tags=["Avaliações"]
+)
+
+app.include_router(
+    suporte.router,
+    prefix="/suporte",
+    tags=["Suporte"]
 )
  
 # ===================== ROTA INICIAL =====================

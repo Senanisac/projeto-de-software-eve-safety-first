@@ -5,7 +5,8 @@ Gerencia todo o ciclo de vida de uma corrida: criar, listar, consultar e finaliz
 """
  
  
-import random                                                   # Para simular distância aleatória
+import random                  # Para distância aleatória quando não há coordenadas      
+import math                    # Para a fórmula Haversine                           # Para simular distância aleatória
 from datetime import date                                       # Para verificar e resetar o limite diário
 from fastapi import APIRouter, Depends, HTTPException           # Ferramentas do FastAPI
 from sqlalchemy.orm import Session                              # Para trabalhar com sessões do banco
@@ -17,6 +18,27 @@ from ..schemas.corrida import CorridaCreate, CorridaResponse, CorridaCancelar  #
 from ..auth import exigir_passageiro, exigir_motorista          # Dependência que garante que é passageiro ou motorista
  
  
+def calcular_distancia_haversine(lat1: float, lng1: float, lat2: float, lng2: float) -> float:
+    """
+    Calcula a distância real em km entre dois pontos GPS usando a fórmula Haversine.
+    Mais preciso que distância em linha reta — considera a curvatura da Terra.
+    """
+    R = 6371   # Raio da Terra em km
+
+    # Converte graus para radianos
+    lat1, lng1, lat2, lng2 = map(math.radians, [lat1, lng1, lat2, lng2])
+
+    # Diferença entre as coordenadas
+    dlat = lat2 - lat1
+    dlng = lng2 - lng1
+
+    # Fórmula Haversine
+    a = math.sin(dlat/2)**2 + math.cos(lat1) * math.cos(lat2) * math.sin(dlng/2)**2
+    c = 2 * math.asin(math.sqrt(a))
+
+    return round(R * c, 2)   # Retorna distância arredondada a 2 casas decimais
+
+
 # Cria o grupo de rotas para corridas
 router = APIRouter()
  
@@ -43,9 +65,11 @@ def listar_corridas_pendentes(
     O motorista vê as corridas disponíveis para aceitar.
     """
 
-    # Busca todas as corridas pendentes — de qualquer passageiro
+    # Busca apenas as corridas pendentes do mesmo tipo de veículo do motorista
+    # Um motorista com Carro só vê corridas que pediram Carro — não Moto nem VIP
     return db.query(CorridaDB).filter(
-        CorridaDB.status == "pendente"   # Apenas corridas que ainda não foram aceitas
+        CorridaDB.status == "pendente",   # Apenas corridas que ainda não foram aceitas
+        CorridaDB.tipo_veiculo == motorista.tipo_veiculo 
     ).all()
 
 
@@ -92,7 +116,16 @@ def solicitar_corrida(
  
     # Simula o cálculo de distância entre origem e destino
     # Em produção: chamada para Google Maps API ou similar
-    distancia = round(random.uniform(1, 50), 2)   # Entre 1 e 50 km, com 2 casas decimais
+    # Calcula distância real se coordenadas fornecidas, senão usa valor aleatório
+    if dados.origem_lat and dados.origem_lng and dados.destino_lat and dados.destino_lng:
+        # Distância real calculada com fórmula Haversine
+        distancia = calcular_distancia_haversine(
+            dados.origem_lat, dados.origem_lng,
+            dados.destino_lat, dados.destino_lng
+        )
+    else:
+        # Sem coordenadas — usa valor aleatório (compatibilidade com versão antiga)
+        distancia = round(random.uniform(1, 50), 2)   # Entre 1 e 50 km, com 2 casas decimais
  
     # Calcula o valor total: distância × tarifa do veículo escolhido
     tarifa = TARIFAS[dados.tipo_veiculo]           # Pega a tarifa do dicionário acima
@@ -102,7 +135,11 @@ def solicitar_corrida(
     nova_corrida = CorridaDB(
         passageiro_id=passageiro.id,   # ID do passageiro autenticado — vem do token, não do frontend
         origem=dados.origem,           # Local de origem enviado pelo frontend
+        origem_lat=dados.origem_lat,     # Coordenadas da origem
+        origem_lng=dados.origem_lng,
         destino=dados.destino,         # Local de destino enviado pelo frontend
+        destino_lat=dados.destino_lat,   # Coordenadas do destino
+        destino_lng=dados.destino_lng,
         distancia=distancia,           # Distância calculada pelo servidor
         tipo_veiculo=dados.tipo_veiculo,   # Tipo escolhido pelo passageiro
         valor=valor,                   # Valor calculado pelo servidor

@@ -21,11 +21,19 @@ class CorridaCreate(BaseModel):
         ...,            # Obrigatório
         min_length=3    # Endereço deve ter pelo menos 3 caracteres
     )
+
+    origem_lat: float | None = None
+
+    origem_lng: float | None = None
  
     destino: str = Field(
         ...,            # Obrigatório
         min_length=3    # Endereço deve ter pelo menos 3 caracteres
     )
+
+    destino_lat: float | None = None
+
+    destino_lng: float | None = None
  
     tipo_veiculo: Literal["Moto", "Carro", "VIP"]   # Só aceita exatamente estes 3 valores
  
@@ -33,7 +41,11 @@ class CorridaCreate(BaseModel):
         json_schema_extra = {
             "example": {
                 "origem": "UFAL — Maceió",
+                "origem_lat": -9.5703,
+                "origem_lng": -35.7773,
                 "destino": "Av. Primeiro de Maio",
+                "destino_lat": -9.6658,
+                "destino_lng": -35.7350,
                 "tipo_veiculo": "Carro"
             }
         }
@@ -50,7 +62,11 @@ class CorridaResponse(BaseModel):
     passageiro_id  : str               # ID do passageiro que solicitou
     #motorista_id   : str | None        # None até um motorista aceitar
     origem         : str               # Local de origem
+    origem_lat     : float | None
+    origem_lng     : float | None
     destino        : str               # Local de destino
+    destino_lat    : float | None
+    destino_lng    : float | None
     distancia      : float             # Distância em km (calculada pelo servidor)
     tipo_veiculo   : str               # Tipo do veículo escolhido
     valor          : float             # Valor total em reais (calculado pelo servidor)
