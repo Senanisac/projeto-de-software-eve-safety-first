@@ -4,6 +4,7 @@
 
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { motion } from "framer-motion";
 import api from "../api/axios";
 import Mapa from "./Mapa";
 
@@ -50,16 +51,22 @@ function AguardandoMotorista({ corrida }) {
   if (status === "pendente") {
     return (
       <div style={{textAlign: "center", padding: "20px"}}>
-        <p style={{fontSize: "48px", margin: "0"}}>🔍</p>
-        <h2 style={{color: "#1a1a2e", marginBottom: "8px"}}>
+        {/* Ícone com animação de pulso */}
+        <motion.div
+          animate={{ scale: [1, 1.1, 1] }}
+          transition={{ duration: 1.5, repeat: Infinity }}
+        >
+          <p style={{fontSize: "56px", margin: "0"}}>🔍</p>
+        </motion.div>
+        <h2 style={{color: "#ffffff", marginBottom: "8px", fontFamily: "Poppins, sans-serif"}}>
           Procurando motorista...
         </h2>
-        <p style={{color: "#666", fontSize: "14px", marginBottom: "8px"}}>
+        <p style={{color: "#a0aec0", fontSize: "14px", marginBottom: "8px"}}>
           {corrida.origem} → {corrida.destino}
         </p>
         <p style={{
-          color: "#2563eb",
-          fontSize: "28px",
+          color: "#6c63ff",
+          fontSize: "32px",
           fontWeight: "700",
           marginBottom: "8px"
         }}>
@@ -67,12 +74,31 @@ function AguardandoMotorista({ corrida }) {
         </p>
 
         {/* Animação de pontos */}
-        <p style={{color: "#666", fontSize: "14px", marginBottom: "24px"}}>
+        <p style={{color: "#a0aec0", fontSize: "14px", marginBottom: "24px"}}>
           Aguardando um motorista aceitar
           {".".repeat((tentativas % 3) + 1)}
         </p>
 
-        <button onClick={() => navigate("/historico")} style={estilos.botaoSecundario}>
+        <button 
+          onClick={() => navigate("/historico")} 
+          style={{
+            padding: "10px 20px",
+            background: "rgba(255,255,255,0.07)",
+            color: "#a0aec0",
+            border: "1px solid rgba(255,255,255,0.1)",
+            borderRadius: "10px",
+            cursor: "pointer",
+            fontSize: "14px",
+            fontWeight: "600",
+            transition: "all 0.3s ease",
+          }}
+          onMouseEnter={(e) => {
+            e.target.style.background = "rgba(255,255,255,0.15)";
+          }}
+          onMouseLeave={(e) => {
+            e.target.style.background = "rgba(255,255,255,0.07)";
+          }}
+        >
           Ver histórico
         </button>
         
@@ -85,17 +111,23 @@ function AguardandoMotorista({ corrida }) {
   if (status === "confirmada") {
     return (
       <div style={{textAlign: "center", padding: "20px"}}>
-        <p style={{fontSize: "64px", margin: "0"}}>🎉</p>
-        <h2 style={{color: "#16a34a", marginBottom: "8px"}}>
+        <motion.div
+          initial={{ scale: 0 }}
+          animate={{ scale: 1 }}
+          transition={{ type: "spring", stiffness: 200 }}
+        >
+          <p style={{fontSize: "72px", margin: "0"}}>🎉</p>
+        </motion.div>
+        <h2 style={{color: "#00d4aa", marginBottom: "8px", fontFamily: "Poppins, sans-serif"}}>
           Motorista encontrado!
         </h2>
-        <p style={{color: "#374151", fontSize: "14px", marginBottom: "8px"}}>
+        <p style={{color: "#a0aec0", fontSize: "14px", marginBottom: "8px"}}>
           O teu motorista está a caminho.<br />
-          Quando chegare ao destino, paga a corrida no histórico.
+          Quando chegares ao destino, paga a corrida no histórico.
         </p>
         <p style={{
-          color: "#2563eb",
-          fontSize: "28px",
+          color: "#6c63ff",
+          fontSize: "32px",
           fontWeight: "700",
           marginBottom: "24px"
         }}>
@@ -103,10 +135,48 @@ function AguardandoMotorista({ corrida }) {
         </p>
 
         <div style={{display: "flex", flexDirection: "column", gap: "12px"}}>
-          <button onClick={() => navigate("/historico")} style={estilos.botao}>
+          <button
+            onClick={() => navigate("/historico")}
+            style={{
+              padding: "12px",
+              background: "linear-gradient(135deg, #6c63ff, #8b85ff)",
+              color: "white",
+              border: "none",
+              borderRadius: "12px",
+              cursor: "pointer",
+              fontSize: "15px",
+              fontWeight: "600",
+              transition: "all 0.3s ease",
+            }}
+            onMouseEnter={(e) => {
+              e.target.style.transform = "scale(1.02)";
+            }}
+            onMouseLeave={(e) => {
+              e.target.style.transform = "scale(1)";
+            }}
+          >
             📋 Ver histórico
           </button>
-          <button onClick={() => navigate("/menu")} style={estilos.botaoSecundario}>
+          <button
+            onClick={() => navigate("/menu")}
+            style={{
+              padding: "12px",
+              background: "rgba(255,255,255,0.07)",
+              color: "#a0aec0",
+              border: "1px solid rgba(255,255,255,0.1)",
+              borderRadius: "12px",
+              cursor: "pointer",
+              fontSize: "15px",
+              fontWeight: "600",
+              transition: "all 0.3s ease",
+            }}
+            onMouseEnter={(e) => {
+              e.target.style.background = "rgba(255,255,255,0.15)";
+            }}
+            onMouseLeave={(e) => {
+              e.target.style.background = "rgba(255,255,255,0.07)";
+            }}
+          >
             Voltar ao menu
           </button>
         </div>
@@ -118,14 +188,33 @@ function AguardandoMotorista({ corrida }) {
   // ===== CORRIDA CANCELADA =====
   return (
     <div style={{textAlign: "center", padding: "20px"}}>
-      <p style={{fontSize: "48px", margin: "0"}}>❌</p>
-      <h2 style={{color: "#dc2626", marginBottom: "8px"}}>
+      <p style={{fontSize: "56px", margin: "0"}}>❌</p>
+      <h2 style={{color: "#ff6584", marginBottom: "8px", fontFamily: "Poppins, sans-serif"}}>
         Corrida cancelada
       </h2>
-      <p style={{color: "#666", fontSize: "14px", marginBottom: "24px"}}>
-        A corrida foi cancelada. Pode solicitar uma nova.
+      <p style={{color: "#a0aec0", fontSize: "14px", marginBottom: "24px"}}>
+        A corrida foi cancelada. Podes solicitar uma nova.
       </p>
-      <button onClick={() => navigate("/corrida")} style={estilos.botao}>
+      <button
+        onClick={() => navigate("/corrida")}
+        style={{
+          padding: "12px 24px",
+          background: "linear-gradient(135deg, #6c63ff, #8b85ff)",
+          color: "white",
+          border: "none",
+          borderRadius: "12px",
+          cursor: "pointer",
+          fontSize: "15px",
+          fontWeight: "600",
+          transition: "all 0.3s ease",
+        }}
+        onMouseEnter={(e) => {
+          e.target.style.transform = "scale(1.02)";
+        }}
+        onMouseLeave={(e) => {
+          e.target.style.transform = "scale(1)";
+        }}
+      >
         Solicitar nova corrida
       </button>
     </div>
@@ -203,34 +292,170 @@ function SolicitarCorrida() {
   // ===================== FASE ESCOLHER VEÍCULO =====================
   if (fase === "veiculo") {
     return (
-      <div style={estilos.container}>
-        <div style={estilos.caixa}>
-          <button onClick={() => navigate("/menu")} style={estilos.botaoVoltar}>← Voltar</button>
-          <h2 style={estilos.titulo}>🚕 Solicitar Corrida</h2>
-          <p style={{color: "#666", fontSize: "14px", marginBottom: "20px"}}>
+      <div style={{
+        minHeight: "100vh",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        background: "linear-gradient(135deg, #0f0f1a 0%, #1a1a2e 50%, #16213e 100%)",
+        position: "relative",
+        overflow: "hidden",
+        padding: "20px",
+      }}>
+
+        {/* ===== CÍRCULOS DECORATIVOS ===== */}
+        {/* Solicitar Corrida → Roxo + Verde */}
+
+        {/* Círculo superior direito — ROXO */}
+        <div style={{
+          position: "absolute", top: "-120px", right: "-120px",
+          width: "450px", height: "450px", borderRadius: "50%",
+          background: "radial-gradient(circle, rgba(108,99,255,0.35), transparent 70%)",
+          pointerEvents: "none",
+        }} />
+
+        {/* Círculo inferior esquerdo — VERDE */}
+        <div style={{
+          position: "absolute", bottom: "-120px", left: "-120px",
+          width: "450px", height: "450px", borderRadius: "50%",
+          background: "radial-gradient(circle, rgba(0,212,170,0.3), transparent 70%)",
+          pointerEvents: "none",
+        }} />
+
+        {/* Card principal */}
+        <motion.div
+          initial={{ opacity: 0, y: 40 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, ease: "easeOut" }}
+          style={{
+            background: "rgba(255,255,255,0.05)",
+            backdropFilter: "blur(20px)",
+            WebkitBackdropFilter: "blur(20px)",
+            border: "1px solid rgba(255,255,255,0.1)",
+            borderRadius: "24px",
+            padding: "36px 32px",
+            width: "100%",
+            maxWidth: "480px",
+            position: "relative",
+            zIndex: 10,
+          }}
+        >
+          <button
+            onClick={() => navigate("/menu")}
+            style={{
+              background: "none",
+              border: "none",
+              color: "#a0aec0",
+              cursor: "pointer",
+              fontSize: "14px",
+              fontWeight: "600",
+              padding: "0",
+              marginBottom: "16px",
+              transition: "all 0.3s ease",
+            }}
+            onMouseEnter={(e) => {
+              e.target.style.color = "#ffffff";
+            }}
+            onMouseLeave={(e) => {
+              e.target.style.color = "#a0aec0";
+            }}
+          >
+            ← Voltar
+          </button>
+
+          <h2 style={{
+            color: "#ffffff",
+            marginBottom: "8px",
+            fontSize: "22px",
+            fontFamily: "Poppins, sans-serif",
+          }}>
+            🚕 Solicitar Corrida
+          </h2>
+          <p style={{
+            color: "#a0aec0",
+            fontSize: "14px",
+            marginBottom: "24px",
+          }}>
             Escolhe o tipo de veículo para continuar.
           </p>
 
-          <div style={estilos.veiculos}>
+          <div style={{
+            display: "flex",
+            gap: "10px",
+            marginBottom: "24px",
+          }}>
             {["Moto", "Carro", "VIP"].map((tipo) => (
-              <div
+              <motion.div
                 key={tipo}
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
                 onClick={() => setTipoVeiculo(tipo)}
-                style={tipoVeiculo === tipo ? estilos.veiculoAtivo : estilos.veiculoInativo}
+                style={{
+                  flex: 1,
+                  padding: "16px 8px",
+                  background: tipoVeiculo === tipo
+                    ? "rgba(108,99,255,0.2)"
+                    : "rgba(255,255,255,0.05)",
+                  border: tipoVeiculo === tipo
+                    ? "2px solid #6c63ff"
+                    : "2px solid rgba(255,255,255,0.1)",
+                  borderRadius: "12px",
+                  cursor: "pointer",
+                  textAlign: "center",
+                  transition: "all 0.3s ease",
+                }}
               >
-                <p style={estilos.veiculoEmoji}>
+                <p style={{
+                  fontSize: "32px",
+                  margin: "0 0 4px 0",
+                }}>
                   {tipo === "Moto" ? "🏍️" : tipo === "Carro" ? "🚗" : "⭐"}
                 </p>
-                <p style={estilos.veiculoNome}>{tipo}</p>
-                <p style={estilos.veiculoTarifa}>R${tarifas[tipo].toFixed(2)}/km</p>
-              </div>
+                <p style={{
+                  fontSize: "14px",
+                  fontWeight: "600",
+                  color: "#ffffff",
+                  margin: "0 0 2px 0",
+                }}>
+                  {tipo}
+                </p>
+                <p style={{
+                  fontSize: "12px",
+                  color: "#a0aec0",
+                  margin: "0",
+                }}>
+                  R${tarifas[tipo].toFixed(2)}/km
+                </p>
+              </motion.div>
             ))}
           </div>
 
-          <button onClick={() => setFase("mapa")} style={estilos.botao}>
+          <button
+            onClick={() => setFase("mapa")}
+            style={{
+              width: "100%",
+              padding: "14px",
+              background: "linear-gradient(135deg, #6c63ff, #8b85ff)",
+              color: "white",
+              border: "none",
+              borderRadius: "12px",
+              fontSize: "15px",
+              fontWeight: "600",
+              cursor: "pointer",
+              transition: "all 0.3s ease",
+            }}
+            onMouseEnter={(e) => {
+              e.target.style.transform = "scale(1.02)";
+              e.target.style.boxShadow = "0 0 20px rgba(108,99,255,0.3)";
+            }}
+            onMouseLeave={(e) => {
+              e.target.style.transform = "scale(1)";
+              e.target.style.boxShadow = "none";
+            }}
+          >
             Escolher no mapa →
           </button>
-        </div>
+        </motion.div>  {/* ✅ CORRIGIDO */}
       </div>
     );
   }
@@ -248,15 +473,24 @@ function SolicitarCorrida() {
             top: "16px",
             left: "356px",
             zIndex: 1001,
-            background: "white",
-            border: "1px solid #d1d5db",
-            borderRadius: "8px",
-            padding: "8px 12px",
+            background: "rgba(255,255,255,0.07)",
+            backdropFilter: "blur(10px)",
+            border: "1px solid rgba(255,255,255,0.1)",
+            borderRadius: "10px",
+            padding: "8px 14px",
             cursor: "pointer",
             fontWeight: "600",
             fontSize: "13px",
-            color: "#2563eb",
-            boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
+            color: "#a0aec0",
+            transition: "all 0.3s ease",
+          }}
+          onMouseEnter={(e) => {
+            e.target.style.background = "rgba(255,255,255,0.15)";
+            e.target.style.color = "#ffffff";
+          }}
+          onMouseLeave={(e) => {
+            e.target.style.background = "rgba(255,255,255,0.07)";
+            e.target.style.color = "#a0aec0";
           }}
         >
           ← Voltar
@@ -273,32 +507,138 @@ function SolicitarCorrida() {
       : "0.00";
 
     return (
-      <div style={estilos.container}>
-        <div style={estilos.caixa}>
-          <h2 style={estilos.titulo}>📋 Confirmar Corrida</h2>
+      <div style={{
+        minHeight: "100vh",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        background: "linear-gradient(135deg, #0f0f1a 0%, #1a1a2e 50%, #16213e 100%)",
+        position: "relative",
+        overflow: "hidden",
+        padding: "20px",
+      }}>
 
-          {erro && <p style={estilos.erro}>{erro}</p>}
+        {/* Círculos decorativos */}
+        <div style={{
+          position: "absolute", top: "-120px", right: "-120px",
+          width: "450px", height: "450px", borderRadius: "50%",
+          background: "radial-gradient(circle, rgba(108,99,255,0.35), transparent 70%)",
+          pointerEvents: "none",
+        }} />
+        <div style={{
+          position: "absolute", bottom: "-120px", left: "-120px",
+          width: "450px", height: "450px", borderRadius: "50%",
+          background: "radial-gradient(circle, rgba(0,212,170,0.3), transparent 70%)",
+          pointerEvents: "none",
+        }} />
 
-          <div style={estilos.resumo}>
-            <div style={estilos.resumoLinha}>
-              <span style={estilos.resumoLabel}>Origem</span>
-              <span style={estilos.resumoValor}>{dadosMapa?.origem}</span>
+        <motion.div
+          initial={{ opacity: 0, y: 40 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, ease: "easeOut" }}
+          style={{
+            background: "rgba(255,255,255,0.05)",
+            backdropFilter: "blur(20px)",
+            WebkitBackdropFilter: "blur(20px)",
+            border: "1px solid rgba(255,255,255,0.1)",
+            borderRadius: "24px",
+            padding: "36px 32px",
+            width: "100%",
+            maxWidth: "480px",
+            position: "relative",
+            zIndex: 10,
+          }}
+        >
+          <h2 style={{
+            color: "#ffffff",
+            marginBottom: "24px",
+            fontSize: "22px",
+            fontFamily: "Poppins, sans-serif",
+          }}>
+            📋 Confirmar Corrida
+          </h2>
+
+          {erro && (
+            <div style={{
+              background: "rgba(255,101,132,0.15)",
+              border: "1px solid rgba(255,101,132,0.3)",
+              color: "#ff6584",
+              borderRadius: "12px",
+              padding: "12px 16px",
+              marginBottom: "16px",
+              fontSize: "14px",
+              textAlign: "center",
+            }}>
+              {erro}
             </div>
-            <div style={estilos.resumoLinha}>
-              <span style={estilos.resumoLabel}>Destino</span>
-              <span style={estilos.resumoValor}>{dadosMapa?.destino}</span>
+          )}
+
+          <div style={{
+            background: "rgba(255,255,255,0.05)",
+            border: "1px solid rgba(255,255,255,0.08)",
+            padding: "16px",
+            borderRadius: "12px",
+            marginBottom: "24px",
+          }}>
+            <div style={{
+              display: "flex",
+              justifyContent: "space-between",
+              padding: "6px 0",
+            }}>
+              <span style={{ color: "#a0aec0", fontSize: "14px" }}>Origem</span>
+              <span style={{ color: "#ffffff", fontSize: "14px", fontWeight: "600" }}>
+                {dadosMapa?.origem}
+              </span>
             </div>
-            <div style={estilos.resumoLinha}>
-              <span style={estilos.resumoLabel}>Veículo</span>
-              <span style={estilos.resumoValor}>{tipoVeiculo}</span>
+            <div style={{
+              display: "flex",
+              justifyContent: "space-between",
+              padding: "6px 0",
+            }}>
+              <span style={{ color: "#a0aec0", fontSize: "14px" }}>Destino</span>
+              <span style={{ color: "#ffffff", fontSize: "14px", fontWeight: "600" }}>
+                {dadosMapa?.destino}
+              </span>
             </div>
-            <div style={estilos.resumoLinha}>
-              <span style={estilos.resumoLabel}>Distância</span>
-              <span style={estilos.resumoValor}>{dadosMapa?.distancia} km</span>
+            <div style={{
+              display: "flex",
+              justifyContent: "space-between",
+              padding: "6px 0",
+            }}>
+              <span style={{ color: "#a0aec0", fontSize: "14px" }}>Veículo</span>
+              <span style={{ color: "#ffffff", fontSize: "14px", fontWeight: "600" }}>
+                {tipoVeiculo}
+              </span>
             </div>
-            <div style={{...estilos.resumoLinha, borderTop: "2px solid #e5e7eb", paddingTop: "12px", marginTop: "4px"}}>
-              <span style={{...estilos.resumoLabel, fontWeight: "700", fontSize: "16px"}}>Total estimado</span>
-              <span style={{...estilos.resumoValor, fontWeight: "700", fontSize: "20px", color: "#2563eb"}}>
+            <div style={{
+              display: "flex",
+              justifyContent: "space-between",
+              padding: "6px 0",
+            }}>
+              <span style={{ color: "#a0aec0", fontSize: "14px" }}>Distância</span>
+              <span style={{ color: "#ffffff", fontSize: "14px", fontWeight: "600" }}>
+                {dadosMapa?.distancia} km
+              </span>
+            </div>
+            <div style={{
+              display: "flex",
+              justifyContent: "space-between",
+              borderTop: "2px solid rgba(255,255,255,0.1)",
+              paddingTop: "12px",
+              marginTop: "4px",
+            }}>
+              <span style={{
+                color: "#a0aec0",
+                fontSize: "16px",
+                fontWeight: "700",
+              }}>
+                Total estimado
+              </span>
+              <span style={{
+                color: "#6c63ff",
+                fontSize: "22px",
+                fontWeight: "700",
+              }}>
                 R${valorEstimado}
               </span>
             </div>
@@ -307,20 +647,50 @@ function SolicitarCorrida() {
           <div style={{display: "flex", gap: "12px"}}>
             <button
               onClick={() => setFase("mapa")}
-              style={estilos.botaoSecundario}
+              style={{
+                flex: 1,
+                padding: "12px",
+                background: "rgba(255,255,255,0.07)",
+                color: "#a0aec0",
+                border: "1px solid rgba(255,255,255,0.1)",
+                borderRadius: "12px",
+                fontSize: "15px",
+                fontWeight: "600",
+                cursor: "pointer",
+                transition: "all 0.3s ease",
+              }}
+              onMouseEnter={(e) => {
+                e.target.style.background = "rgba(255,255,255,0.15)";
+              }}
+              onMouseLeave={(e) => {
+                e.target.style.background = "rgba(255,255,255,0.07)";
+              }}
             >
               ← Editar
             </button>
             <button
               onClick={handleSolicitar}
-              style={carregando ? estilos.botaoDesativado : estilos.botao}
               disabled={carregando}
+              style={{
+                flex: 1,
+                padding: "12px",
+                background: carregando
+                  ? "rgba(108,99,255,0.5)"
+                  : "linear-gradient(135deg, #6c63ff, #8b85ff)",
+                color: "white",
+                border: "none",
+                borderRadius: "12px",
+                fontSize: "15px",
+                fontWeight: "600",
+                cursor: carregando ? "not-allowed" : "pointer",
+                transition: "all 0.3s ease",
+              }}
             >
               {carregando ? "Solicitando..." : "✓ Confirmar"}
             </button>
           </div>
 
-          </div>
+        </motion.div>  {/* ✅ CORRIGIDO */}
       </div>
     );
   }
@@ -328,135 +698,53 @@ function SolicitarCorrida() {
 
   // ===================== FASE SUCESSO =====================
   return (
-    <div style={estilos.container}>
-      <div style={estilos.caixa}>
+    <div style={{
+      minHeight: "100vh",
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+      background: "linear-gradient(135deg, #0f0f1a 0%, #1a1a2e 50%, #16213e 100%)",
+      position: "relative",
+      overflow: "hidden",
+      padding: "20px",
+    }}>
+
+      {/* Círculos decorativos */}
+      <div style={{
+        position: "absolute", top: "-120px", right: "-120px",
+        width: "450px", height: "450px", borderRadius: "50%",
+        background: "radial-gradient(circle, rgba(108,99,255,0.35), transparent 70%)",
+        pointerEvents: "none",
+      }} />
+      <div style={{
+        position: "absolute", bottom: "-120px", left: "-120px",
+        width: "450px", height: "450px", borderRadius: "50%",
+        background: "radial-gradient(circle, rgba(0,212,170,0.3), transparent 70%)",
+        pointerEvents: "none",
+      }} />
+
+      <motion.div
+        initial={{ opacity: 0, y: 40 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6, ease: "easeOut" }}
+        style={{
+          background: "rgba(255,255,255,0.05)",
+          backdropFilter: "blur(20px)",
+          WebkitBackdropFilter: "blur(20px)",
+          border: "1px solid rgba(255,255,255,0.1)",
+          borderRadius: "24px",
+          padding: "36px 32px",
+          width: "100%",
+          maxWidth: "480px",
+          position: "relative",
+          zIndex: 10,
+        }}
+      >
         {corrida && <AguardandoMotorista corrida={corrida} />}
-      </div>
+      </motion.div>  {/* ✅ CORRIGIDO */}
     </div>
   );
 }
 
+export default SolicitarCorrida;
 
-
-// ===================== ESTILOS =====================
-const estilos = {
-  container: {
-    display: "flex",
-    justifyContent: "center",
-    alignItems: "center",
-    minHeight: "100vh",
-    backgroundColor: "#f0f2f5",
-    padding: "20px",
-  },
-  caixa: {
-    backgroundColor: "white",
-    padding: "32px",
-    borderRadius: "12px",
-    boxShadow: "0 4px 20px rgba(0,0,0,0.1)",
-    width: "100%",
-    maxWidth: "480px",
-  },
-  botaoVoltar: {
-    background: "none",
-    border: "none",
-    color: "#2563eb",
-    cursor: "pointer",
-    fontSize: "14px",
-    fontWeight: "600",
-    padding: "0",
-    marginBottom: "16px",
-  },
-  titulo: {
-    color: "#1a1a2e",
-    marginBottom: "24px",
-    fontSize: "20px",
-  },
-  erro: {
-    backgroundColor: "#fee2e2",
-    color: "#dc2626",
-    padding: "10px",
-    borderRadius: "8px",
-    marginBottom: "16px",
-    fontSize: "14px",
-    textAlign: "center",
-  },
-  veiculos: {
-    display: "flex",
-    gap: "10px",
-    marginBottom: "24px",
-  },
-  veiculoAtivo: {
-    flex: 1,
-    padding: "12px 8px",
-    backgroundColor: "#eff6ff",
-    border: "2px solid #2563eb",
-    borderRadius: "8px",
-    cursor: "pointer",
-    textAlign: "center",
-  },
-  veiculoInativo: {
-    flex: 1,
-    padding: "12px 8px",
-    backgroundColor: "white",
-    border: "2px solid #e5e7eb",
-    borderRadius: "8px",
-    cursor: "pointer",
-    textAlign: "center",
-  },
-  veiculoEmoji: { fontSize: "24px", margin: "0 0 4px 0" },
-  veiculoNome: { fontSize: "13px", fontWeight: "600", color: "#374151", margin: "0 0 2px 0" },
-  veiculoTarifa: { fontSize: "11px", color: "#666", margin: "0" },
-  botao: {
-    flex: 1,
-    width: "100%",
-    padding: "12px",
-    backgroundColor: "#2563eb",
-    color: "white",
-    border: "none",
-    borderRadius: "8px",
-    fontSize: "15px",
-    fontWeight: "600",
-    cursor: "pointer",
-    marginTop: "8px",
-  },
-  botaoDesativado: {
-    flex: 1,
-    width: "100%",
-    padding: "12px",
-    backgroundColor: "#93c5fd",
-    color: "white",
-    border: "none",
-    borderRadius: "8px",
-    fontSize: "15px",
-    fontWeight: "600",
-    cursor: "not-allowed",
-    marginTop: "8px",
-  },
-  botaoSecundario: {
-    flex: 1,
-    padding: "12px",
-    backgroundColor: "white",
-    color: "#374151",
-    border: "1px solid #d1d5db",
-    borderRadius: "8px",
-    fontSize: "15px",
-    fontWeight: "600",
-    cursor: "pointer",
-    marginTop: "8px",
-  },
-  resumo: {
-    backgroundColor: "#f8fafc",
-    padding: "16px",
-    borderRadius: "8px",
-    marginBottom: "24px",
-  },
-  resumoLinha: {
-    display: "flex",
-    justifyContent: "space-between",
-    padding: "6px 0",
-  },
-  resumoLabel: { color: "#666", fontSize: "14px" },
-  resumoValor: { color: "#1a1a2e", fontSize: "14px", fontWeight: "600" },
-};
-
-export default SolicitarCorrida; 

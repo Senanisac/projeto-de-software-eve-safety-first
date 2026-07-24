@@ -1,9 +1,11 @@
 
 // pages/Pagamento.jsx - Tela de pagamento de corridas
 // Lista corridas finalizadas e permite escolher o método de pagamento
+// Design moderno com glassmorphism, cards interativos e animações
 
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { motion } from "framer-motion";
 import api from "../api/axios";
 
 
@@ -58,6 +60,19 @@ function Pagamento() {
   });
 
 
+  // ===================== FORMATAR DATA =====================
+  const formatarData = (dataISO) => {
+    const data = new Date(dataISO);
+    return data.toLocaleDateString("pt-BR", {
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+  };
+
+
   // ===================== FUNÇÃO PARA PROCESSAR PAGAMENTO =====================
   const handlePagar = async () => {
     setErro("");
@@ -84,27 +99,142 @@ function Pagamento() {
   // ===================== INTERFACE — FASE LISTA =====================
   if (fase === "lista") {
     return (
-      <div style={estilos.container}>
-        <div style={estilos.caixa}>
+      <div style={{
+        minHeight: "100vh",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        background: "linear-gradient(135deg, #0f0f1a 0%, #1a1a2e 50%, #16213e 100%)",
+        position: "relative",
+        overflow: "hidden",
+        padding: "20px",
+      }}>
 
-          <button onClick={() => navigate("/menu")} style={estilos.botaoVoltar}>
-            ← Voltar
-          </button>
-          <h2 style={estilos.titulo}>💳 Pagamentos</h2>
+        {/* ===== CÍRCULOS DECORATIVOS ===== */}
+        {/* Pagamento → Verde + Roxo */}
 
-          {carregando && <p style={estilos.mensagem}>Carregando...</p>}
-          {erro && <p style={estilos.erro}>{erro}</p>}
+        <div style={{
+          position: "absolute", top: "-120px", right: "-120px",
+          width: "450px", height: "450px", borderRadius: "50%",
+          background: "radial-gradient(circle, rgba(0,212,170,0.35), transparent 70%)",
+          pointerEvents: "none",
+        }} />
 
-          {/* Lista vazia — sem corridas para pagar */}
+        <div style={{
+          position: "absolute", bottom: "-120px", left: "-120px",
+          width: "450px", height: "450px", borderRadius: "50%",
+          background: "radial-gradient(circle, rgba(108,99,255,0.3), transparent 70%)",
+          pointerEvents: "none",
+        }} />
+
+        {/* Card principal */}
+        <motion.div
+          initial={{ opacity: 0, y: 40 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, ease: "easeOut" }}
+          style={{
+            background: "rgba(255,255,255,0.05)",
+            backdropFilter: "blur(20px)",
+            WebkitBackdropFilter: "blur(20px)",
+            border: "1px solid rgba(255,255,255,0.1)",
+            borderRadius: "24px",
+            padding: "36px 32px",
+            width: "100%",
+            maxWidth: "480px",
+            maxHeight: "90vh",
+            overflowY: "auto",
+            position: "relative",
+            zIndex: 10,
+          }}
+        >
+          <div style={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            marginBottom: "20px",
+          }}>
+            <h2 style={{
+              color: "#ffffff",
+              marginBottom: "0",
+              fontSize: "20px",
+              fontFamily: "Poppins, sans-serif",
+            }}>
+              💳 Pagamentos
+            </h2>
+
+            <button
+              onClick={() => navigate("/menu")}
+              style={{
+                padding: "8px 14px",
+                background: "rgba(255,255,255,0.07)",
+                color: "#a0aec0",
+                border: "1px solid rgba(255,255,255,0.1)",
+                borderRadius: "10px",
+                cursor: "pointer",
+                fontSize: "13px",
+                fontWeight: "600",
+                transition: "all 0.3s ease",
+              }}
+              onMouseEnter={(e) => {
+                e.target.style.background = "rgba(255,255,255,0.15)";
+              }}
+              onMouseLeave={(e) => {
+                e.target.style.background = "rgba(255,255,255,0.07)";
+              }}
+            >
+              ← Voltar
+            </button>
+          </div>
+
+          {carregando && <p style={{ color: "#a0aec0", textAlign: "center" }}>Carregando...</p>}
+          {erro && (
+            <div style={{
+              background: "rgba(255,101,132,0.15)",
+              border: "1px solid rgba(255,101,132,0.3)",
+              color: "#ff6584",
+              borderRadius: "12px",
+              padding: "12px 16px",
+              marginBottom: "16px",
+              fontSize: "14px",
+              textAlign: "center",
+            }}>
+              {erro}
+            </div>
+          )}
+
+          {/* Lista vazia — com botão para solicitar corrida */}
           {!carregando && corridasParaPagar.length === 0 && (
-            <div style={estilos.vazio}>
-              <p style={{fontSize: "48px", margin: "0"}}>✅</p>
-              <p style={estilos.vazioTexto}>
-                Nenhuma corrida pendente de pagamento.
+            <div style={{
+              textAlign: "center",
+              padding: "40px 20px",
+              color: "#a0aec0",
+            }}>
+              <p style={{ fontSize: "48px", margin: "0" }}>✅</p>
+              <p style={{ fontSize: "16px" }}>Nenhuma corrida pendente de pagamento.</p>
+              <p style={{ fontSize: "14px", marginTop: "4px" }}>
+                Todas as corridas já foram pagas.
               </p>
+              {/* ✅ BOTÃO SOLICITAR CORRIDA RESTAURADO */}
               <button
                 onClick={() => navigate("/corrida")}
-                style={estilos.botao}
+                style={{
+                  marginTop: "20px",
+                  padding: "12px 24px",
+                  background: "linear-gradient(135deg, #6c63ff, #8b85ff)",
+                  color: "white",
+                  border: "none",
+                  borderRadius: "12px",
+                  cursor: "pointer",
+                  fontSize: "14px",
+                  fontWeight: "600",
+                  transition: "all 0.3s ease",
+                }}
+                onMouseEnter={(e) => {
+                  e.target.style.transform = "scale(1.02)";
+                }}
+                onMouseLeave={(e) => {
+                  e.target.style.transform = "scale(1)";
+                }}
               >
                 Solicitar corrida
               </button>
@@ -113,40 +243,101 @@ function Pagamento() {
 
           {/* Lista de corridas disponíveis para pagar */}
           {!carregando && corridasParaPagar.length > 0 && (
-            <div style={estilos.lista}>
-              <p style={estilos.instrucao}>
+            <div>
+              <p style={{
+                color: "#a0aec0",
+                fontSize: "14px",
+                marginBottom: "16px",
+              }}>
                 Selecione uma corrida para pagar:
               </p>
 
-              {corridasParaPagar.map((corrida) => (
-                <div
-                  key={corrida.id}
-                  onClick={() => {
-                    setCorridaSelecionada(corrida); // Guarda a corrida selecionada
-                    setFase("confirmacao");          // Avança para confirmação
-                  }}
-                  style={estilos.card}
-                >
-                  <div style={estilos.cardTopo}>
-                    <p style={estilos.rota}>
-                      {corrida.origem} → {corrida.destino}
-                    </p>
-                    <span style={estilos.valor}>
-                      R${corrida.valor.toFixed(2)}
-                    </span>
-                  </div>
-                  <div style={estilos.cardDetalhes}>
-                    <span style={estilos.detalhe}>🚗 {corrida.tipo_veiculo}</span>
-                    <span style={estilos.detalhe}>📍 {corrida.distancia} km</span>
-                  </div>
-                  <p style={estilos.cliqueAqui}>Clique para pagar →</p>
-                </div>
-              ))}
+              <div style={{
+                display: "flex",
+                flexDirection: "column",
+                gap: "12px",
+              }}>
+                {corridasParaPagar.map((corrida, index) => (
+                  <motion.div
+                    key={corrida.id}
+                    initial={{ opacity: 0, x: -20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: index * 0.05 }}
+                    whileHover={{ scale: 1.02, borderColor: "#00d4aa" }}
+                    onClick={() => {
+                      setCorridaSelecionada(corrida);
+                      setFase("confirmacao");
+                    }}
+                    style={{
+                      background: "rgba(255,255,255,0.05)",
+                      border: "2px solid rgba(0,212,170,0.3)",
+                      borderRadius: "14px",
+                      padding: "16px 18px",
+                      cursor: "pointer",
+                      transition: "all 0.3s ease",
+                    }}
+                  >
+                    <div style={{
+                      display: "flex",
+                      justifyContent: "space-between",
+                      alignItems: "flex-start",
+                      marginBottom: "8px",
+                    }}>
+                      <p style={{
+                        fontWeight: "600",
+                        color: "#ffffff",
+                        fontSize: "14px",
+                        margin: "0",
+                        flex: 1,
+                        marginRight: "12px",
+                      }}>
+                        {corrida.origem} → {corrida.destino}
+                      </p>
+                      <span style={{
+                        fontWeight: "700",
+                        color: "#00d4aa",
+                        fontSize: "16px",
+                      }}>
+                        R${corrida.valor.toFixed(2)}
+                      </span>
+                    </div>
 
+                    <div style={{
+                      display: "flex",
+                      gap: "16px",
+                      marginBottom: "4px",
+                    }}>
+                      <span style={{ fontSize: "13px", color: "#a0aec0" }}>
+                        🚗 {corrida.tipo_veiculo}
+                      </span>
+                      <span style={{ fontSize: "13px", color: "#a0aec0" }}>
+                        📏 {corrida.distancia} km
+                      </span>
+                    </div>
+
+                    <p style={{
+                      fontSize: "11px",
+                      color: "rgba(0,212,170,0.5)",
+                      margin: "4px 0 0 0",
+                    }}>
+                      {formatarData(corrida.criado_em)}
+                    </p>
+
+                    <p style={{
+                      fontSize: "12px",
+                      color: "#00d4aa",
+                      margin: "6px 0 0 0",
+                      fontWeight: "600",
+                    }}>
+                      Clique para pagar →
+                    </p>
+                  </motion.div>
+                ))}
+              </div>
             </div>
           )}
 
-        </div>
+        </motion.div>
       </div>
     );
   }
@@ -155,77 +346,236 @@ function Pagamento() {
   // ===================== INTERFACE — FASE CONFIRMAÇÃO =====================
   if (fase === "confirmacao") {
     return (
-      <div style={estilos.container}>
-        <div style={estilos.caixa}>
+      <div style={{
+        minHeight: "100vh",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        background: "linear-gradient(135deg, #0f0f1a 0%, #1a1a2e 50%, #16213e 100%)",
+        position: "relative",
+        overflow: "hidden",
+        padding: "20px",
+      }}>
 
-          <h2 style={estilos.titulo}>💳 Confirmar Pagamento</h2>
+        <div style={{
+          position: "absolute", top: "-120px", right: "-120px",
+          width: "450px", height: "450px", borderRadius: "50%",
+          background: "radial-gradient(circle, rgba(0,212,170,0.35), transparent 70%)",
+          pointerEvents: "none",
+        }} />
 
-          {erro && <p style={estilos.erro}>{erro}</p>}
+        <div style={{
+          position: "absolute", bottom: "-120px", left: "-120px",
+          width: "450px", height: "450px", borderRadius: "50%",
+          background: "radial-gradient(circle, rgba(108,99,255,0.3), transparent 70%)",
+          pointerEvents: "none",
+        }} />
 
-          {/* Resumo da corrida selecionada */}
-          <div style={estilos.resumo}>
-            <div style={estilos.resumoLinha}>
-              <span style={estilos.resumoLabel}>Origem</span>
-              <span style={estilos.resumoValor}>{corridaSelecionada.origem}</span>
+        <motion.div
+          initial={{ opacity: 0, y: 40 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, ease: "easeOut" }}
+          style={{
+            background: "rgba(255,255,255,0.05)",
+            backdropFilter: "blur(20px)",
+            WebkitBackdropFilter: "blur(20px)",
+            border: "1px solid rgba(255,255,255,0.1)",
+            borderRadius: "24px",
+            padding: "36px 32px",
+            width: "100%",
+            maxWidth: "480px",
+            position: "relative",
+            zIndex: 10,
+          }}
+        >
+          <h2 style={{
+            color: "#ffffff",
+            marginBottom: "24px",
+            fontSize: "20px",
+            fontFamily: "Poppins, sans-serif",
+          }}>
+            💳 Confirmar Pagamento
+          </h2>
+
+          {erro && (
+            <div style={{
+              background: "rgba(255,101,132,0.15)",
+              border: "1px solid rgba(255,101,132,0.3)",
+              color: "#ff6584",
+              borderRadius: "12px",
+              padding: "12px 16px",
+              marginBottom: "16px",
+              fontSize: "14px",
+              textAlign: "center",
+            }}>
+              {erro}
             </div>
-            <div style={estilos.resumoLinha}>
-              <span style={estilos.resumoLabel}>Destino</span>
-              <span style={estilos.resumoValor}>{corridaSelecionada.destino}</span>
+          )}
+
+          {/* Resumo da corrida */}
+          <div style={{
+            background: "rgba(255,255,255,0.05)",
+            border: "1px solid rgba(255,255,255,0.08)",
+            padding: "16px",
+            borderRadius: "12px",
+            marginBottom: "24px",
+          }}>
+            <div style={{
+              display: "flex",
+              justifyContent: "space-between",
+              padding: "6px 0",
+            }}>
+              <span style={{ color: "#a0aec0", fontSize: "14px" }}>Origem</span>
+              <span style={{ color: "#ffffff", fontSize: "14px", fontWeight: "600" }}>
+                {corridaSelecionada.origem}
+              </span>
             </div>
-            <div style={estilos.resumoLinha}>
-              <span style={estilos.resumoLabel}>Veículo</span>
-              <span style={estilos.resumoValor}>{corridaSelecionada.tipo_veiculo}</span>
+            <div style={{
+              display: "flex",
+              justifyContent: "space-between",
+              padding: "6px 0",
+            }}>
+              <span style={{ color: "#a0aec0", fontSize: "14px" }}>Destino</span>
+              <span style={{ color: "#ffffff", fontSize: "14px", fontWeight: "600" }}>
+                {corridaSelecionada.destino}
+              </span>
             </div>
-            <div style={{...estilos.resumoLinha, borderTop: "2px solid #e5e7eb", paddingTop: "12px", marginTop: "4px"}}>
-              <span style={{...estilos.resumoLabel, fontWeight: "700"}}>Total</span>
-              <span style={{...estilos.resumoValor, fontSize: "20px", color: "#2563eb"}}>
+            <div style={{
+              display: "flex",
+              justifyContent: "space-between",
+              padding: "6px 0",
+            }}>
+              <span style={{ color: "#a0aec0", fontSize: "14px" }}>Veículo</span>
+              <span style={{ color: "#ffffff", fontSize: "14px", fontWeight: "600" }}>
+                {corridaSelecionada.tipo_veiculo}
+              </span>
+            </div>
+            <div style={{
+              display: "flex",
+              justifyContent: "space-between",
+              borderTop: "2px solid rgba(255,255,255,0.1)",
+              paddingTop: "12px",
+              marginTop: "4px",
+            }}>
+              <span style={{
+                color: "#a0aec0",
+                fontSize: "16px",
+                fontWeight: "700",
+              }}>
+                Total
+              </span>
+              <span style={{
+                color: "#00d4aa",
+                fontSize: "22px",
+                fontWeight: "700",
+              }}>
                 R${corridaSelecionada.valor.toFixed(2)}
               </span>
             </div>
           </div>
 
-          {/* Seleção do método de pagamento */}
-          <div style={estilos.campo}>
-            <label style={estilos.label}>Forma de pagamento</label>
-            <div style={estilos.metodos}>
-
-              {/* Itera sobre os 3 métodos */}
+          {/* Sélection du mode de paiement */}
+          <div style={{ marginBottom: "20px" }}>
+            <label style={{
+              display: "block",
+              marginBottom: "10px",
+              color: "#a0aec0",
+              fontSize: "14px",
+              fontWeight: "600",
+            }}>
+              Forma de pagamento
+            </label>
+            <div style={{
+              display: "flex",
+              gap: "10px",
+            }}>
               {[
-                {id: "pix",     emoji: "⚡", nome: "PIX"},
-                {id: "cartao",  emoji: "💳", nome: "Cartão"},
-                {id: "dinheiro",emoji: "💵", nome: "Dinheiro"},
+                { id: "pix", emoji: "⚡", nome: "PIX" },
+                { id: "cartao", emoji: "💳", nome: "Cartão" },
+                { id: "dinheiro", emoji: "💵", nome: "Dinheiro" },
               ].map((m) => (
-                <div
+                <motion.div
                   key={m.id}
-                  onClick={() => setMetodo(m.id)}   // Seleciona o método ao clicar
-                  style={metodo === m.id ? estilos.metodoAtivo : estilos.metodoInativo}
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={() => setMetodo(m.id)}
+                  style={{
+                    flex: 1,
+                    padding: "12px 8px",
+                    background: metodo === m.id
+                      ? "rgba(0,212,170,0.2)"
+                      : "rgba(255,255,255,0.05)",
+                    border: metodo === m.id
+                      ? "2px solid #00d4aa"
+                      : "2px solid rgba(255,255,255,0.1)",
+                    borderRadius: "12px",
+                    cursor: "pointer",
+                    textAlign: "center",
+                    transition: "all 0.3s ease",
+                  }}
                 >
-                  <p style={{fontSize: "24px", margin: "0 0 4px 0"}}>{m.emoji}</p>
-                  <p style={{fontSize: "13px", fontWeight: "600", margin: "0"}}>{m.nome}</p>
-                </div>
+                  <p style={{ fontSize: "24px", margin: "0 0 4px 0" }}>{m.emoji}</p>
+                  <p style={{
+                    fontSize: "13px",
+                    fontWeight: "600",
+                    color: metodo === m.id ? "#00d4aa" : "#a0aec0",
+                    margin: "0",
+                  }}>
+                    {m.nome}
+                  </p>
+                </motion.div>
               ))}
-
             </div>
           </div>
 
-          {/* Botões */}
-          <div style={{display: "flex", gap: "12px"}}>
+          {/* Boutons */}
+          <div style={{ display: "flex", gap: "12px" }}>
             <button
-              onClick={() => setFase("lista")}  // Volta à lista sem pagar
-              style={estilos.botaoCancelar}
+              onClick={() => setFase("lista")}
+              style={{
+                flex: 1,
+                padding: "12px",
+                background: "rgba(255,255,255,0.07)",
+                color: "#a0aec0",
+                border: "1px solid rgba(255,255,255,0.1)",
+                borderRadius: "12px",
+                fontSize: "15px",
+                fontWeight: "600",
+                cursor: "pointer",
+                transition: "all 0.3s ease",
+              }}
+              onMouseEnter={(e) => {
+                e.target.style.background = "rgba(255,255,255,0.15)";
+              }}
+              onMouseLeave={(e) => {
+                e.target.style.background = "rgba(255,255,255,0.07)";
+              }}
             >
               Voltar
             </button>
             <button
               onClick={handlePagar}
-              style={carregando ? estilos.botaoDesativado : estilos.botao}
               disabled={carregando}
+              style={{
+                flex: 1,
+                padding: "12px",
+                background: carregando
+                  ? "rgba(0,212,170,0.3)"
+                  : "linear-gradient(135deg, #00d4aa, #00b894)",
+                color: "white",
+                border: "none",
+                borderRadius: "12px",
+                fontSize: "15px",
+                fontWeight: "600",
+                cursor: carregando ? "not-allowed" : "pointer",
+                transition: "all 0.3s ease",
+              }}
             >
               {carregando ? "Processando..." : "✓ Pagar"}
             </button>
           </div>
 
-        </div>
+        </motion.div>
       </div>
     );
   }
@@ -233,28 +583,111 @@ function Pagamento() {
 
   // ===================== INTERFACE — FASE SUCESSO =====================
   return (
-    <div style={estilos.container}>
-      <div style={estilos.caixa}>
+    <div style={{
+      minHeight: "100vh",
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+      background: "linear-gradient(135deg, #0f0f1a 0%, #1a1a2e 50%, #16213e 100%)",
+      position: "relative",
+      overflow: "hidden",
+      padding: "20px",
+    }}>
 
-        <div style={{textAlign: "center"}}>
-          <p style={{fontSize: "64px", margin: "0"}}>✅</p>
-          <h2 style={estilos.titulo}>Pagamento Aprovado!</h2>
+      <div style={{
+        position: "absolute", top: "-120px", right: "-120px",
+        width: "450px", height: "450px", borderRadius: "50%",
+        background: "radial-gradient(circle, rgba(0,212,170,0.35), transparent 70%)",
+        pointerEvents: "none",
+      }} />
 
-          {/* Detalhes do pagamento */}
-          <div style={estilos.resumo}>
-            <div style={estilos.resumoLinha}>
-              <span style={estilos.resumoLabel}>Método</span>
-              <span style={estilos.resumoValor}>{pagamentoFeito.metodo.toUpperCase()}</span>
+      <div style={{
+        position: "absolute", bottom: "-120px", left: "-120px",
+        width: "450px", height: "450px", borderRadius: "50%",
+        background: "radial-gradient(circle, rgba(108,99,255,0.3), transparent 70%)",
+        pointerEvents: "none",
+      }} />
+
+      <motion.div
+        initial={{ opacity: 0, y: 40 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6, ease: "easeOut" }}
+        style={{
+          background: "rgba(255,255,255,0.05)",
+          backdropFilter: "blur(20px)",
+          WebkitBackdropFilter: "blur(20px)",
+          border: "1px solid rgba(255,255,255,0.1)",
+          borderRadius: "24px",
+          padding: "36px 32px",
+          width: "100%",
+          maxWidth: "480px",
+          position: "relative",
+          zIndex: 10,
+        }}
+      >
+        <div style={{ textAlign: "center" }}>
+          <motion.div
+            initial={{ scale: 0 }}
+            animate={{ scale: 1 }}
+            transition={{ type: "spring", stiffness: 200 }}
+          >
+            <p style={{ fontSize: "72px", margin: "0" }}>✅</p>
+          </motion.div>
+          <h2 style={{
+            color: "#00d4aa",
+            marginBottom: "24px",
+            fontSize: "22px",
+            fontFamily: "Poppins, sans-serif",
+          }}>
+            Pagamento Aprovado!
+          </h2>
+
+          <div style={{
+            background: "rgba(255,255,255,0.05)",
+            border: "1px solid rgba(255,255,255,0.08)",
+            padding: "16px",
+            borderRadius: "12px",
+            marginBottom: "24px",
+          }}>
+            <div style={{
+              display: "flex",
+              justifyContent: "space-between",
+              padding: "6px 0",
+            }}>
+              <span style={{ color: "#a0aec0", fontSize: "14px" }}>Método</span>
+              <span style={{ color: "#ffffff", fontSize: "14px", fontWeight: "600" }}>
+                {pagamentoFeito.metodo.toUpperCase()}
+              </span>
             </div>
-            <div style={estilos.resumoLinha}>
-              <span style={estilos.resumoLabel}>Status</span>
-              <span style={{...estilos.resumoValor, color: "#16a34a"}}>
+            <div style={{
+              display: "flex",
+              justifyContent: "space-between",
+              padding: "6px 0",
+            }}>
+              <span style={{ color: "#a0aec0", fontSize: "14px" }}>Status</span>
+              <span style={{ color: "#00d4aa", fontSize: "14px", fontWeight: "600" }}>
                 {pagamentoFeito.status}
               </span>
             </div>
-            <div style={estilos.resumoLinha}>
-              <span style={estilos.resumoLabel}>Valor pago</span>
-              <span style={{...estilos.resumoValor, fontSize: "20px", color: "#2563eb"}}>
+            <div style={{
+              display: "flex",
+              justifyContent: "space-between",
+              borderTop: "2px solid rgba(255,255,255,0.1)",
+              paddingTop: "12px",
+              marginTop: "4px",
+            }}>
+              <span style={{
+                color: "#a0aec0",
+                fontSize: "16px",
+                fontWeight: "700",
+              }}>
+                Valor pago
+              </span>
+              <span style={{
+                color: "#00d4aa",
+                fontSize: "22px",
+                fontWeight: "700",
+              }}>
                 R${pagamentoFeito.valor.toFixed(2)}
               </span>
             </div>
@@ -262,216 +695,32 @@ function Pagamento() {
 
           <button
             onClick={() => navigate("/menu")}
-            style={estilos.botao}
+            style={{
+              width: "100%",
+              padding: "14px",
+              background: "linear-gradient(135deg, #00d4aa, #00b894)",
+              color: "white",
+              border: "none",
+              borderRadius: "12px",
+              fontSize: "15px",
+              fontWeight: "600",
+              cursor: "pointer",
+              transition: "all 0.3s ease",
+            }}
+            onMouseEnter={(e) => {
+              e.target.style.transform = "scale(1.02)";
+            }}
+            onMouseLeave={(e) => {
+              e.target.style.transform = "scale(1)";
+            }}
           >
             Voltar ao menu
           </button>
         </div>
-
-      </div>
+      </motion.div>
     </div>
   );
 }
-
-
-// ===================== ESTILOS =====================
-const estilos = {
-  container: {
-    display: "flex",
-    justifyContent: "center",
-    alignItems: "flex-start",
-    minHeight: "100vh",
-    backgroundColor: "#f0f2f5",
-    padding: "20px",
-  },
-  caixa: {
-    backgroundColor: "white",
-    padding: "32px",
-    borderRadius: "12px",
-    boxShadow: "0 4px 20px rgba(0,0,0,0.1)",
-    width: "100%",
-    maxWidth: "480px",
-  },
-  botaoVoltar: {
-    background: "none",
-    border: "none",
-    color: "#2563eb",
-    cursor: "pointer",
-    fontSize: "14px",
-    fontWeight: "600",
-    padding: "0",
-    marginBottom: "16px",
-  },
-  titulo: {
-    color: "#1a1a2e",
-    marginBottom: "24px",
-    fontSize: "20px",
-  },
-  mensagem: {
-    textAlign: "center",
-    color: "#666",
-    padding: "20px",
-  },
-  erro: {
-    backgroundColor: "#fee2e2",
-    color: "#dc2626",
-    padding: "10px",
-    borderRadius: "8px",
-    marginBottom: "16px",
-    fontSize: "14px",
-    textAlign: "center",
-  },
-  vazio: {
-    textAlign: "center",
-    padding: "40px 20px",
-  },
-  vazioTexto: {
-    color: "#666",
-    marginBottom: "20px",
-  },
-  instrucao: {
-    color: "#374151",
-    fontSize: "14px",
-    marginBottom: "12px",
-  },
-  lista: {
-    display: "flex",
-    flexDirection: "column",
-    gap: "12px",
-  },
-  card: {
-    border: "1px solid #e5e7eb",
-    borderRadius: "8px",
-    padding: "16px",
-    cursor: "pointer",            // Indica que é clicável
-    transition: "border-color 0.2s", // Animação suave ao passar o rato
-  },
-  cardTopo: {
-    display: "flex",
-    justifyContent: "space-between",
-    alignItems: "flex-start",
-    marginBottom: "8px",
-  },
-  rota: {
-    fontWeight: "600",
-    color: "#1a1a2e",
-    fontSize: "14px",
-    margin: "0",
-    flex: 1,
-    marginRight: "12px",
-  },
-  valor: {
-    fontWeight: "700",
-    color: "#2563eb",
-    fontSize: "16px",
-  },
-  cardDetalhes: {
-    display: "flex",
-    gap: "16px",
-    marginBottom: "6px",
-  },
-  detalhe: {
-    fontSize: "13px",
-    color: "#374151",
-  },
-  cliqueAqui: {
-    fontSize: "12px",
-    color: "#2563eb",
-    margin: "6px 0 0 0",
-    fontWeight: "600",
-  },
-  campo: {
-    marginBottom: "20px",
-  },
-  label: {
-    display: "block",
-    marginBottom: "10px",
-    color: "#374151",
-    fontSize: "14px",
-    fontWeight: "600",
-  },
-  metodos: {
-    display: "flex",
-    gap: "10px",
-  },
-  metodoAtivo: {
-    flex: 1,
-    padding: "12px 8px",
-    backgroundColor: "#eff6ff",
-    border: "2px solid #2563eb",
-    borderRadius: "8px",
-    cursor: "pointer",
-    textAlign: "center",
-  },
-  metodoInativo: {
-    flex: 1,
-    padding: "12px 8px",
-    backgroundColor: "white",
-    border: "2px solid #e5e7eb",
-    borderRadius: "8px",
-    cursor: "pointer",
-    textAlign: "center",
-  },
-  resumo: {
-    backgroundColor: "#f8fafc",
-    padding: "16px",
-    borderRadius: "8px",
-    marginBottom: "24px",
-  },
-  resumoLinha: {
-    display: "flex",
-    justifyContent: "space-between",
-    padding: "6px 0",
-  },
-  resumoLabel: {
-    color: "#666",
-    fontSize: "14px",
-  },
-  resumoValor: {
-    color: "#1a1a2e",
-    fontSize: "14px",
-    fontWeight: "600",
-  },
-  botao: {
-    flex: 1,
-    width: "100%",
-    padding: "12px",
-    backgroundColor: "#2563eb",
-    color: "white",
-    border: "none",
-    borderRadius: "8px",
-    fontSize: "15px",
-    fontWeight: "600",
-    cursor: "pointer",
-    marginTop: "8px",
-  },
-  botaoDesativado: {
-    flex: 1,
-    width: "100%",
-    padding: "12px",
-    backgroundColor: "#93c5fd",
-    color: "white",
-    border: "none",
-    borderRadius: "8px",
-    fontSize: "15px",
-    fontWeight: "600",
-    cursor: "not-allowed",
-    marginTop: "8px",
-  },
-  botaoCancelar: {
-    flex: 1,
-    padding: "12px",
-    backgroundColor: "white",
-    color: "#374151",
-    border: "1px solid #d1d5db",
-    borderRadius: "8px",
-    fontSize: "15px",
-    fontWeight: "600",
-    cursor: "pointer",
-    marginTop: "8px",
-  },
-};
-
 
 export default Pagamento;
 

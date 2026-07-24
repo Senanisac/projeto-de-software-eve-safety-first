@@ -1,6 +1,7 @@
 
 // pages/Mapa.jsx - Componente de mapa interativo
 // Usa Leaflet + OpenStreetMap + Nominatim para geocodificação gratuita
+// Design moderno com painel glass escuro, animações e melhorias UX
 
 import { useState, useEffect, useRef } from "react";
 import { MapContainer, TileLayer, Marker, Popup, Polyline, useMap } from "react-leaflet";
@@ -35,19 +36,42 @@ const iconeDestino = new L.Icon({
 
 // ===================== COMPONENTE PARA CENTRAR O MAPA =====================
 // Necessário porque o MapContainer não atualiza o centro após a criação
-function CentrarMapa({ coordenadas }) {
+function CentrarMapa({ coordenadas, origem, destino }) {
   const mapa = useMap();
+  
   useEffect(() => {
     if (coordenadas) {
       mapa.flyTo(coordenadas, 14, { duration: 1.5 });  // Animação suave ao centrar
     }
-  }, [coordenadas, mapa]);
+    
+    // Se ambos os pontos estão definidos, centraliza no meio do caminho
+    if (origem && destino) {
+      const latMedio = (origem.lat + destino.lat) / 2;
+      const lngMedio = (origem.lng + destino.lng) / 2;
+      
+      // Calcular a distância aproximada para ajustar o zoom
+      const dLat = (destino.lat - origem.lat) * 111; // Aproximadamente km por grau
+      const dLng = (destino.lng - origem.lng) * 111 * Math.cos(origem.lat * Math.PI / 180);
+      const distancia = Math.sqrt(dLat * dLat + dLng * dLng);
+      
+      // Ajusta o zoom baseado na distância
+      let zoom = 13;
+      if (distancia > 20) zoom = 10;
+      else if (distancia > 10) zoom = 11;
+      else if (distancia > 5) zoom = 12;
+      else if (distancia > 2) zoom = 13;
+      else zoom = 14;
+      
+      mapa.flyTo([latMedio, lngMedio], zoom, { duration: 1.5 });
+    }
+  }, [coordenadas, origem, destino, mapa]);
+  
   return null;
 }
 
 
 // ===================== COMPONENTE PRINCIPAL DO MAPA =====================
-function Mapa({ onConfirmar }) {
+function Mapa({ onConfirmar, onVoltar }) {
   // Estados dos endereços
   const [textoOrigem, setTextoOrigem] = useState("");
   const [textoDestino, setTextoDestino] = useState("");
@@ -150,12 +174,43 @@ function Mapa({ onConfirmar }) {
   };
 
 
+  // ===================== SPINNER ANIMADO =====================
+  const Spinner = () => (
+    <span style={{
+      width: "16px",
+      height: "16px",
+      border: "2px solid rgba(108,99,255,0.3)",
+      borderTop: "2px solid #6c63ff",
+      borderRadius: "50%",
+      animation: "spin 0.8s linear infinite",
+      display: "inline-block",
+    }} />
+  );
+
+
   // ===================== INTERFACE =====================
   return (
     <div style={estilos.container}>
 
       {/* ===== PAINEL DE PESQUISA ===== */}
       <div style={estilos.painel}>
+        
+        {/* Botão Voltar no painel */}
+        {onVoltar && (
+          <button
+            onClick={onVoltar}
+            style={estilos.botaoVoltar}
+            onMouseEnter={(e) => {
+              e.target.style.color = "#ffffff";
+            }}
+            onMouseLeave={(e) => {
+              e.target.style.color = "#a0aec0";
+            }}
+          >
+            ← Voltar
+          </button>
+        )}
+
         <h3 style={estilos.painelTitulo}>📍 Definir percurso</h3>
 
         {erro && <p style={estilos.erro}>{erro}</p>}
@@ -171,13 +226,15 @@ function Mapa({ onConfirmar }) {
               onKeyDown={(e) => e.key === "Enter" && geocodificar(textoOrigem, "origem")}
               placeholder="Ex: UFAL, Maceió"
               style={estilos.input}
+              onFocus={(e) => e.target.style.borderColor = "#6c63ff"}
+              onBlur={(e) => e.target.style.borderColor = "rgba(255,255,255,0.1)"}
             />
             <button
               onClick={() => geocodificar(textoOrigem, "origem")}
               style={estilos.botaoBuscar}
               disabled={carregandoOrigem}
             >
-              {carregandoOrigem ? "..." : "🔍"}
+              {carregandoOrigem ? <Spinner /> : "🔍"}
             </button>
           </div>
           {origem && (
@@ -198,13 +255,15 @@ function Mapa({ onConfirmar }) {
               onKeyDown={(e) => e.key === "Enter" && geocodificar(textoDestino, "destino")}
               placeholder="Ex: Av. Primeiro de Maio"
               style={estilos.input}
+              onFocus={(e) => e.target.style.borderColor = "#6c63ff"}
+              onBlur={(e) => e.target.style.borderColor = "rgba(255,255,255,0.1)"}
             />
             <button
               onClick={() => geocodificar(textoDestino, "destino")}
               style={estilos.botaoBuscar}
               disabled={carregandoDestino}
             >
-              {carregandoDestino ? "..." : "🔍"}
+              {carregandoDestino ? <Spinner /> : "🔍"}
             </button>
           </div>
           {destino && (
@@ -226,11 +285,27 @@ function Mapa({ onConfirmar }) {
         {/* Botão confirmar */}
         <button
           onClick={handleConfirmar}
-          style={origem && destino ? estilos.botaoConfirmar : estilos.botaoConfirmarDesativado}
           disabled={!origem || !destino}
+          style={origem && destino ? estilos.botaoConfirmar : estilos.botaoConfirmarDesativado}
+          onMouseEnter={(e) => {
+            if (origem && destino) {
+              e.target.style.transform = "scale(1.02)";
+              e.target.style.boxShadow = "0 0 20px rgba(108,99,255,0.3)";
+            }
+          }}
+          onMouseLeave={(e) => {
+            e.target.style.transform = "scale(1)";
+            e.target.style.boxShadow = "none";
+          }}
         >
           ✓ Confirmar percurso
         </button>
+
+        {/* Légende */}
+        <div style={estilos.legenda}>
+          <span style={{ color: "#22c55e" }}>●</span> Origem &nbsp;
+          <span style={{ color: "#ef4444" }}>●</span> Destino
+        </div>
       </div>
 
       {/* ===== MAPA ===== */}
@@ -247,7 +322,7 @@ function Mapa({ onConfirmar }) {
           />
 
           {/* Centrar mapa automaticamente */}
-          {centrarEm && <CentrarMapa coordenadas={centrarEm} />}
+          {centrarEm && <CentrarMapa coordenadas={centrarEm} origem={origem} destino={destino} />}
 
           {/* Pin da origem */}
           {origem && (
@@ -270,7 +345,7 @@ function Mapa({ onConfirmar }) {
                 [origem.lat, origem.lng],
                 [destino.lat, destino.lng]
               ]}
-              color="#2563eb"        // Linha azul
+              color="#6c63ff"        // Linha violeta (coerente com tema)
               weight={3}             // Espessura
               dashArray="8, 8"       // Linha tracejada
             />
@@ -279,6 +354,13 @@ function Mapa({ onConfirmar }) {
         </MapContainer>
       </div>
 
+      {/* CSS para o spinner */}
+      <style>{`
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .leaflet-marker-icon {
+          filter: drop-shadow(0 2px 8px rgba(0,0,0,0.3));
+        }
+      `}</style>
     </div>
   );
 }
@@ -290,29 +372,45 @@ const estilos = {
     display: "flex",
     gap: "0",
     height: "100vh",
-    backgroundColor: "#f0f2f5",
+    backgroundColor: "#0f0f1a",  // Fundo escuro
   },
   painel: {
     width: "340px",
     minWidth: "340px",
-    backgroundColor: "white",
+    background: "rgba(255,255,255,0.05)",
+    backdropFilter: "blur(20px)",
+    WebkitBackdropFilter: "blur(20px)",
+    borderRight: "1px solid rgba(255,255,255,0.1)",
     padding: "24px",
-    boxShadow: "2px 0 10px rgba(0,0,0,0.1)",
     overflowY: "auto",
     zIndex: 1000,
   },
+  botaoVoltar: {
+    background: "none",
+    border: "none",
+    color: "#a0aec0",
+    cursor: "pointer",
+    fontSize: "13px",
+    fontWeight: "600",
+    padding: "0",
+    marginBottom: "16px",
+    transition: "all 0.3s ease",
+  },
   painelTitulo: {
-    color: "#1a1a2e",
+    color: "#ffffff",
     fontSize: "16px",
     marginBottom: "20px",
+    fontFamily: "Poppins, sans-serif",
   },
   erro: {
-    backgroundColor: "#fee2e2",
-    color: "#dc2626",
+    background: "rgba(255,101,132,0.15)",
+    border: "1px solid rgba(255,101,132,0.3)",
+    color: "#ff6584",
     padding: "8px 12px",
     borderRadius: "8px",
     marginBottom: "12px",
     fontSize: "13px",
+    textAlign: "center",
   },
   campo: {
     marginBottom: "16px",
@@ -320,7 +418,7 @@ const estilos = {
   label: {
     display: "block",
     marginBottom: "6px",
-    color: "#374151",
+    color: "#a0aec0",
     fontSize: "13px",
     fontWeight: "600",
   },
@@ -331,61 +429,82 @@ const estilos = {
   input: {
     flex: 1,
     padding: "8px 12px",
-    border: "1px solid #d1d5db",
+    background: "rgba(255,255,255,0.07)",
+    border: "1px solid rgba(255,255,255,0.1)",
     borderRadius: "8px",
+    color: "#ffffff",
     fontSize: "13px",
     outline: "none",
+    transition: "border-color 0.3s ease",
   },
   botaoBuscar: {
     padding: "8px 12px",
-    backgroundColor: "#f3f4f6",
-    border: "1px solid #d1d5db",
+    background: "rgba(255,255,255,0.07)",
+    border: "1px solid rgba(255,255,255,0.1)",
     borderRadius: "8px",
+    color: "#a0aec0",
     cursor: "pointer",
     fontSize: "16px",
+    transition: "all 0.3s ease",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    minWidth: "40px",
   },
   enderecoEncontrado: {
     marginTop: "4px",
     fontSize: "11px",
-    color: "#16a34a",
+    color: "#00d4aa",
   },
   distancia: {
-    backgroundColor: "#eff6ff",
+    background: "rgba(108,99,255,0.1)",
+    border: "1px solid rgba(108,99,255,0.2)",
     padding: "12px",
     borderRadius: "8px",
     marginBottom: "16px",
     textAlign: "center",
   },
   distanciaTexto: {
-    color: "#1d4ed8",
+    color: "#a0aec0",
     fontSize: "14px",
     margin: "0",
   },
   botaoConfirmar: {
     width: "100%",
     padding: "12px",
-    backgroundColor: "#2563eb",
+    background: "linear-gradient(135deg, #6c63ff, #8b85ff)",
     color: "white",
     border: "none",
     borderRadius: "8px",
     fontSize: "14px",
     fontWeight: "600",
     cursor: "pointer",
+    transition: "all 0.3s ease",
   },
   botaoConfirmarDesativado: {
     width: "100%",
     padding: "12px",
-    backgroundColor: "#93c5fd",
-    color: "white",
+    background: "rgba(108,99,255,0.3)",
+    color: "rgba(255,255,255,0.5)",
     border: "none",
     borderRadius: "8px",
     fontSize: "14px",
     fontWeight: "600",
     cursor: "not-allowed",
   },
+  legenda: {
+    marginTop: "16px",
+    padding: "8px 12px",
+    background: "rgba(255,255,255,0.05)",
+    borderRadius: "8px",
+    color: "#a0aec0",
+    fontSize: "12px",
+    textAlign: "center",
+  },
   mapa: {
     flex: 1,
     height: "100vh",
+    position: "relative",
   },
 };
 

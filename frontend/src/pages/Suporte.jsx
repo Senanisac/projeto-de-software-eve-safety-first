@@ -1,9 +1,11 @@
 
 // pages/Suporte.jsx - Tela de suporte ao cliente
 // Passageiro e motorista podem enviar e consultar mensagens de suporte
+// Design moderno com glassmorphism, abas interativas et animations
 
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { motion } from "framer-motion";
 import api from "../api/axios";
 
 
@@ -62,33 +64,176 @@ function Suporte() {
   // ===================== COR DO STATUS =====================
   const corStatus = (status) => {
     return status === "pendente"
-      ? { backgroundColor: "#fef9c3", color: "#854d0e" }   // Amarelo
-      : { backgroundColor: "#dcfce7", color: "#16a34a" };  // Verde
+      ? { backgroundColor: "rgba(234,179,8,0.15)", color: "#eab308" }   // Amarelo
+      : { backgroundColor: "rgba(0,212,170,0.15)", color: "#00d4aa" };  // Verde
+  };
+
+
+  // ===================== FORMATAR DATA =====================
+  const formatarData = (dataISO) => {
+    const data = new Date(dataISO);
+    return data.toLocaleDateString("pt-BR", {
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+    });
   };
 
 
   // ===================== INTERFACE =====================
   return (
-    <div style={estilos.container}>
-      <div style={estilos.caixa}>
+    <div style={{
+      minHeight: "100vh",
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+      background: "linear-gradient(135deg, #0f0f1a 0%, #1a1a2e 50%, #16213e 100%)",
+      position: "relative",
+      overflow: "hidden",
+      padding: "20px",
+    }}>
 
+      {/* ===== CÍRCULOS DECORATIVOS ===== */}
+      {/* Suporte → Azul + Roxo */}
+
+      <div style={{
+        position: "absolute", top: "-120px", right: "-120px",
+        width: "450px", height: "450px", borderRadius: "50%",
+        background: "radial-gradient(circle, rgba(37,99,235,0.35), transparent 70%)",
+        pointerEvents: "none",
+      }} />
+
+      <div style={{
+        position: "absolute", bottom: "-120px", left: "-120px",
+        width: "450px", height: "450px", borderRadius: "50%",
+        background: "radial-gradient(circle, rgba(108,99,255,0.3), transparent 70%)",
+        pointerEvents: "none",
+      }} />
+
+      {/* Card principal */}
+      <motion.div
+        initial={{ opacity: 0, y: 40 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6, ease: "easeOut" }}
+        style={{
+          background: "rgba(255,255,255,0.05)",
+          backdropFilter: "blur(20px)",
+          WebkitBackdropFilter: "blur(20px)",
+          border: "1px solid rgba(255,255,255,0.1)",
+          borderRadius: "24px",
+          padding: "36px 32px",
+          width: "100%",
+          maxWidth: "520px",
+          maxHeight: "90vh",
+          overflowY: "auto",
+          position: "relative",
+          zIndex: 10,
+        }}
+      >
         {/* Cabeçalho */}
-        <button onClick={() => navigate("/menu")} style={estilos.botaoVoltar}>
-          ← Voltar
-        </button>
-        <h2 style={estilos.titulo}>🎧 Suporte ao Cliente</h2>
+        <div style={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          marginBottom: "20px",
+        }}>
+          <h2 style={{
+            color: "#ffffff",
+            fontSize: "20px",
+            margin: "0",
+            fontFamily: "Poppins, sans-serif",
+          }}>
+            🎧 Suporte ao Cliente
+          </h2>
 
-        {/* Abas */}
-        <div style={estilos.abas}>
+          <button
+            onClick={() => navigate("/menu")}
+            style={{
+              padding: "8px 14px",
+              background: "rgba(255,255,255,0.07)",
+              color: "#a0aec0",
+              border: "1px solid rgba(255,255,255,0.1)",
+              borderRadius: "10px",
+              cursor: "pointer",
+              fontSize: "13px",
+              fontWeight: "600",
+              transition: "all 0.3s ease",
+            }}
+            onMouseEnter={(e) => {
+              e.target.style.background = "rgba(255,255,255,0.15)";
+            }}
+            onMouseLeave={(e) => {
+              e.target.style.background = "rgba(255,255,255,0.07)";
+            }}
+          >
+            ← Voltar
+          </button>
+        </div>
+
+        {/* ===== ABAS ===== */}
+        <div style={{
+          display: "flex",
+          gap: "8px",
+          marginBottom: "24px",
+        }}>
+          {/* Aba "Enviar mensagem" — VIOLET */}
           <button
             onClick={() => setAba("enviar")}
-            style={aba === "enviar" ? estilos.abaAtiva : estilos.abaInativa}
+            style={aba === "enviar" ? {
+              flex: 1,
+              padding: "10px",
+              background: "linear-gradient(135deg, #6c63ff, #8b85ff)",
+              color: "white",
+              border: "none",
+              borderRadius: "10px",
+              cursor: "pointer",
+              fontWeight: "600",
+              fontSize: "13px",
+              transition: "all 0.3s ease",
+            } : {
+              flex: 1,
+              padding: "10px",
+              background: "rgba(255,255,255,0.05)",
+              color: "#a0aec0",
+              border: "1px solid rgba(255,255,255,0.1)",
+              borderRadius: "10px",
+              cursor: "pointer",
+              fontWeight: "600",
+              fontSize: "13px",
+              transition: "all 0.3s ease",
+            }}
           >
             ✉️ Enviar mensagem
           </button>
+
+          {/* Aba "Minhas mensagens" — VIOLET quand active */}
           <button
             onClick={() => setAba("minhas")}
-            style={aba === "minhas" ? estilos.abaAtiva : estilos.abaInativa}
+            style={aba === "minhas" ? {
+              flex: 1,
+              padding: "10px",
+              background: "linear-gradient(135deg, #6c63ff, #8b85ff)",
+              color: "white",
+              border: "none",
+              borderRadius: "10px",
+              cursor: "pointer",
+              fontWeight: "600",
+              fontSize: "13px",
+              transition: "all 0.3s ease",
+            } : {
+              flex: 1,
+              padding: "10px",
+              background: "rgba(255,255,255,0.05)",
+              color: "#a0aec0",
+              border: "1px solid rgba(255,255,255,0.1)",
+              borderRadius: "10px",
+              cursor: "pointer",
+              fontWeight: "600",
+              fontSize: "13px",
+              transition: "all 0.3s ease",
+            }}
           >
             📋 Minhas mensagens
           </button>
@@ -96,283 +241,292 @@ function Suporte() {
 
         {/* ===== ABA ENVIAR ===== */}
         {aba === "enviar" && (
-          <div>
-            {erro && <p style={estilos.erro}>{erro}</p>}
-            {sucesso && <p style={estilos.sucesso}>{sucesso}</p>}
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.3 }}
+          >
+            {erro && (
+              <div style={{
+                background: "rgba(255,101,132,0.15)",
+                border: "1px solid rgba(255,101,132,0.3)",
+                color: "#ff6584",
+                borderRadius: "12px",
+                padding: "12px 16px",
+                marginBottom: "16px",
+                fontSize: "14px",
+                textAlign: "center",
+              }}>
+                {erro}
+              </div>
+            )}
+            {sucesso && (
+              <div style={{
+                background: "rgba(0,212,170,0.15)",
+                border: "1px solid rgba(0,212,170,0.3)",
+                color: "#00d4aa",
+                borderRadius: "12px",
+                padding: "12px 16px",
+                marginBottom: "16px",
+                fontSize: "14px",
+                textAlign: "center",
+              }}>
+                {sucesso}
+              </div>
+            )}
 
             <form onSubmit={handleEnviar}>
 
-              <div style={estilos.campo}>
-                <label style={estilos.label}>Assunto</label>
+              <div style={{ marginBottom: "16px" }}>
+                <label style={{
+                  display: "block",
+                  marginBottom: "6px",
+                  color: "#a0aec0",
+                  fontSize: "13px",
+                  fontWeight: "600",
+                }}>
+                  Assunto
+                </label>
                 <input
                   type="text"
                   value={assunto}
                   onChange={(e) => setAssunto(e.target.value)}
                   placeholder="Ex: Problema com pagamento"
                   maxLength={100}
-                  style={estilos.input}
+                  style={{
+                    width: "100%",
+                    padding: "12px 14px",
+                    background: "rgba(255,255,255,0.05)",
+                    border: "1px solid rgba(255,255,255,0.1)",
+                    borderRadius: "12px",
+                    color: "#ffffff",
+                    fontSize: "14px",
+                    outline: "none",
+                    transition: "border 0.3s ease",
+                    boxSizing: "border-box",
+                  }}
+                  onFocus={(e) => e.target.style.border = "1px solid #6c63ff"}
+                  onBlur={(e) => e.target.style.border = "1px solid rgba(255,255,255,0.1)"}
                   required
                 />
-                <p style={estilos.contador}>{assunto.length}/100</p>
+                <p style={{
+                  textAlign: "right",
+                  fontSize: "12px",
+                  color: "rgba(160,174,192,0.5)",
+                  margin: "4px 0 0 0",
+                }}>
+                  {assunto.length}/100
+                </p>
               </div>
 
-              <div style={estilos.campo}>
-                <label style={estilos.label}>Mensagem</label>
+              <div style={{ marginBottom: "20px" }}>
+                <label style={{
+                  display: "block",
+                  marginBottom: "6px",
+                  color: "#a0aec0",
+                  fontSize: "13px",
+                  fontWeight: "600",
+                }}>
+                  Mensagem
+                </label>
                 <textarea
                   value={mensagem}
                   onChange={(e) => setMensagem(e.target.value)}
                   placeholder="Descreve o teu problema em detalhe..."
                   maxLength={1000}
                   rows={5}
-                  style={estilos.textarea}
+                  style={{
+                    width: "100%",
+                    padding: "12px 14px",
+                    background: "rgba(255,255,255,0.05)",
+                    border: "1px solid rgba(255,255,255,0.1)",
+                    borderRadius: "12px",
+                    color: "#ffffff",
+                    fontSize: "14px",
+                    outline: "none",
+                    resize: "vertical",
+                    boxSizing: "border-box",
+                    fontFamily: "inherit",
+                    transition: "border 0.3s ease",
+                  }}
+                  onFocus={(e) => e.target.style.border = "1px solid #6c63ff"}
+                  onBlur={(e) => e.target.style.border = "1px solid rgba(255,255,255,0.1)"}
                   required
                 />
-                <p style={estilos.contador}>{mensagem.length}/1000</p>
+                <p style={{
+                  textAlign: "right",
+                  fontSize: "12px",
+                  color: "rgba(160,174,192,0.5)",
+                  margin: "4px 0 0 0",
+                }}>
+                  {mensagem.length}/1000
+                </p>
               </div>
 
+              {/* Bouton Enviar — VIOLET */}
               <button
                 type="submit"
-                style={carregando ? estilos.botaoDesativado : estilos.botao}
                 disabled={carregando}
+                style={{
+                  width: "100%",
+                  padding: "14px",
+                  background: carregando
+                    ? "rgba(108,99,255,0.3)"
+                    : "linear-gradient(135deg, #6c63ff, #8b85ff)",
+                  color: "white",
+                  border: "none",
+                  borderRadius: "12px",
+                  fontSize: "15px",
+                  fontWeight: "600",
+                  cursor: carregando ? "not-allowed" : "pointer",
+                  transition: "all 0.3s ease",
+                }}
+                onMouseEnter={(e) => {
+                  if (!carregando) {
+                    e.target.style.transform = "scale(1.02)";
+                    e.target.style.boxShadow = "0 0 20px rgba(108,99,255,0.3)";
+                  }
+                }}
+                onMouseLeave={(e) => {
+                  e.target.style.transform = "scale(1)";
+                  e.target.style.boxShadow = "none";
+                }}
               >
-                {carregando ? "Enviando..." : "✉️ Enviar mensagem"}
+                {carregando ? (
+                  <span style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "8px" }}>
+                    <span style={{
+                      width: "16px", height: "16px",
+                      border: "2px solid rgba(255,255,255,0.3)",
+                      borderTop: "2px solid white",
+                      borderRadius: "50%",
+                      animation: "spin 0.8s linear infinite",
+                      display: "inline-block",
+                    }} />
+                    Enviando...
+                  </span>
+                ) : "✉️ Enviar mensagem"}
               </button>
 
             </form>
-          </div>
+          </motion.div>
         )}
 
         {/* ===== ABA MINHAS MENSAGENS ===== */}
         {aba === "minhas" && (
-          <div>
-            {erro && <p style={estilos.erro}>{erro}</p>}
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.3 }}
+          >
+            {erro && (
+              <div style={{
+                background: "rgba(255,101,132,0.15)",
+                border: "1px solid rgba(255,101,132,0.3)",
+                color: "#ff6584",
+                borderRadius: "12px",
+                padding: "12px 16px",
+                marginBottom: "16px",
+                fontSize: "14px",
+                textAlign: "center",
+              }}>
+                {erro}
+              </div>
+            )}
 
             {mensagens.length === 0 ? (
-              <div style={estilos.vazio}>
-                <p style={{fontSize: "40px", margin: "0"}}>📭</p>
-                <p style={estilos.vazioTexto}>Nenhuma mensagem enviada ainda.</p>
+              <div style={{
+                textAlign: "center",
+                padding: "40px 20px",
+                color: "#a0aec0",
+              }}>
+                <p style={{ fontSize: "48px", margin: "0" }}>📭</p>
+                <p style={{ fontSize: "16px" }}>Nenhuma mensagem enviada ainda.</p>
+                <p style={{ fontSize: "14px", marginTop: "4px" }}>
+                  Envie uma mensagem para o suporte.
+                </p>
               </div>
             ) : (
-              <div style={estilos.lista}>
-                {mensagens.map((msg) => (
-                  <div key={msg.id} style={estilos.card}>
-
-                    {/* Cabeçalho do card */}
-                    <div style={estilos.cardTopo}>
-                      <p style={estilos.assunto}>{msg.assunto}</p>
-                      <span style={{...estilos.badge, ...corStatus(msg.status)}}>
-                        {msg.status}
+              <div style={{
+                display: "flex",
+                flexDirection: "column",
+                gap: "12px",
+              }}>
+                {mensagens.map((msg, index) => (
+                  <motion.div
+                    key={msg.id}
+                    initial={{ opacity: 0, x: -20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: index * 0.05 }}
+                    whileHover={{ scale: 1.01 }}
+                    style={{
+                      background: "rgba(255,255,255,0.05)",
+                      border: "1px solid rgba(255,255,255,0.08)",
+                      borderRadius: "14px",
+                      padding: "16px 18px",
+                      transition: "all 0.3s ease",
+                    }}
+                  >
+                    <div style={{
+                      display: "flex",
+                      justifyContent: "space-between",
+                      alignItems: "flex-start",
+                      marginBottom: "8px",
+                    }}>
+                      <p style={{
+                        fontWeight: "700",
+                        color: "#ffffff",
+                        fontSize: "14px",
+                        margin: "0",
+                        flex: 1,
+                        marginRight: "12px",
+                      }}>
+                        {msg.assunto}
+                      </p>
+                      <span style={{
+                        padding: "2px 10px",
+                        borderRadius: "20px",
+                        fontSize: "11px",
+                        fontWeight: "600",
+                        whiteSpace: "nowrap",
+                        ...corStatus(msg.status),
+                      }}>
+                        {msg.status === "pendente" ? "⏳ Pendente" : "✅ Respondido"}
                       </span>
                     </div>
 
-                    {/* Conteúdo da mensagem */}
-                    <p style={estilos.mensagemTexto}>{msg.mensagem}</p>
-
-                    {/* Data */}
-                    <p style={estilos.data}>
-                      {new Date(msg.criado_em).toLocaleString("pt-BR")}
+                    <p style={{
+                      color: "#a0aec0",
+                      fontSize: "14px",
+                      marginBottom: "8px",
+                      lineHeight: "1.5",
+                    }}>
+                      {msg.mensagem}
                     </p>
 
-                  </div>
+                    <p style={{
+                      fontSize: "11px",
+                      color: "rgba(160,174,192,0.5)",
+                      margin: "0",
+                    }}>
+                      {formatarData(msg.criado_em)}
+                    </p>
+                  </motion.div>
                 ))}
               </div>
             )}
-          </div>
+          </motion.div>
         )}
 
-      </div>
+        {/* CSS pour le spinner */}
+        <style>{`
+          @keyframes spin { to { transform: rotate(360deg); } }
+          ::placeholder { color: rgba(160,174,192,0.4); }
+        `}</style>
+
+      </motion.div>
     </div>
   );
 }
-
-
-// ===================== ESTILOS =====================
-const estilos = {
-  container: {
-    display: "flex",
-    justifyContent: "center",
-    alignItems: "flex-start",
-    minHeight: "100vh",
-    backgroundColor: "#f0f2f5",
-    padding: "20px",
-  },
-  caixa: {
-    backgroundColor: "white",
-    padding: "32px",
-    borderRadius: "12px",
-    boxShadow: "0 4px 20px rgba(0,0,0,0.1)",
-    width: "100%",
-    maxWidth: "520px",
-  },
-  botaoVoltar: {
-    background: "none",
-    border: "none",
-    color: "#2563eb",
-    cursor: "pointer",
-    fontSize: "14px",
-    fontWeight: "600",
-    padding: "0",
-    marginBottom: "16px",
-  },
-  titulo: {
-    color: "#1a1a2e",
-    fontSize: "20px",
-    marginBottom: "20px",
-  },
-  abas: {
-    display: "flex",
-    gap: "8px",
-    marginBottom: "24px",
-  },
-  abaAtiva: {
-    flex: 1,
-    padding: "10px",
-    backgroundColor: "#2563eb",
-    color: "white",
-    border: "none",
-    borderRadius: "8px",
-    cursor: "pointer",
-    fontWeight: "600",
-    fontSize: "14px",
-  },
-  abaInativa: {
-    flex: 1,
-    padding: "10px",
-    backgroundColor: "white",
-    color: "#374151",
-    border: "1px solid #d1d5db",
-    borderRadius: "8px",
-    cursor: "pointer",
-    fontWeight: "600",
-    fontSize: "14px",
-  },
-  erro: {
-    backgroundColor: "#fee2e2",
-    color: "#dc2626",
-    padding: "10px",
-    borderRadius: "8px",
-    marginBottom: "16px",
-    fontSize: "14px",
-    textAlign: "center",
-  },
-  sucesso: {
-    backgroundColor: "#dcfce7",
-    color: "#16a34a",
-    padding: "10px",
-    borderRadius: "8px",
-    marginBottom: "16px",
-    fontSize: "14px",
-  },
-  campo: {
-    marginBottom: "16px",
-  },
-  label: {
-    display: "block",
-    marginBottom: "6px",
-    color: "#374151",
-    fontSize: "14px",
-    fontWeight: "600",
-  },
-  input: {
-    width: "100%",
-    padding: "10px 12px",
-    border: "1px solid #d1d5db",
-    borderRadius: "8px",
-    fontSize: "14px",
-    outline: "none",
-    boxSizing: "border-box",
-  },
-  textarea: {
-    width: "100%",
-    padding: "10px 12px",
-    border: "1px solid #d1d5db",
-    borderRadius: "8px",
-    fontSize: "14px",
-    outline: "none",
-    resize: "vertical",
-    boxSizing: "border-box",
-    fontFamily: "inherit",
-  },
-  contador: {
-    textAlign: "right",
-    fontSize: "12px",
-    color: "#9ca3af",
-    margin: "4px 0 0 0",
-  },
-  botao: {
-    width: "100%",
-    padding: "12px",
-    backgroundColor: "#2563eb",
-    color: "white",
-    border: "none",
-    borderRadius: "8px",
-    fontSize: "15px",
-    fontWeight: "600",
-    cursor: "pointer",
-  },
-  botaoDesativado: {
-    width: "100%",
-    padding: "12px",
-    backgroundColor: "#93c5fd",
-    color: "white",
-    border: "none",
-    borderRadius: "8px",
-    fontSize: "15px",
-    fontWeight: "600",
-    cursor: "not-allowed",
-  },
-  vazio: {
-    textAlign: "center",
-    padding: "40px 20px",
-  },
-  vazioTexto: {
-    color: "#666",
-    marginTop: "8px",
-  },
-  lista: {
-    display: "flex",
-    flexDirection: "column",
-    gap: "12px",
-  },
-  card: {
-    border: "1px solid #e5e7eb",
-    borderRadius: "8px",
-    padding: "16px",
-  },
-  cardTopo: {
-    display: "flex",
-    justifyContent: "space-between",
-    alignItems: "flex-start",
-    marginBottom: "8px",
-  },
-  assunto: {
-    fontWeight: "700",
-    color: "#1a1a2e",
-    fontSize: "14px",
-    margin: "0",
-    flex: 1,
-    marginRight: "12px",
-  },
-  badge: {
-    padding: "2px 10px",
-    borderRadius: "20px",
-    fontSize: "12px",
-    fontWeight: "600",
-    whiteSpace: "nowrap",
-  },
-  mensagemTexto: {
-    color: "#374151",
-    fontSize: "14px",
-    marginBottom: "8px",
-    lineHeight: "1.5",
-  },
-  data: {
-    fontSize: "12px",
-    color: "#9ca3af",
-    margin: "0",
-  },
-};
-
 
 export default Suporte;
 

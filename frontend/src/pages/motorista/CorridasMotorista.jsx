@@ -1,9 +1,11 @@
 
 // pages/motorista/CorridasMotorista.jsx - Tela de corridas do motorista
 // Mostra corridas pendentes (para aceitar) e corridas confirmadas (para cancelar)
+// Design moderno com glassmorphism, seções separadas e cores personalizadas
 
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { motion } from "framer-motion";
 import api from "../../api/axios";
 
 
@@ -127,306 +129,464 @@ function CorridasMotorista() {
 
 
   // ===================== INTERFACE =====================
-  return (
-    <div style={estilos.container}>
-      <div style={estilos.caixa}>
 
+  // Mostra mensagem de carregamento enquanto os dados não chegaram
+  if (carregando) {
+    return (
+      <div style={{
+        minHeight: "100vh",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        background: "linear-gradient(135deg, #0f0f1a 0%, #1a1a2e 50%, #16213e 100%)",
+      }}>
+        <p style={{ color: "#a0aec0" }}>Carregando corridas...</p>
+      </div>
+    );
+  }
+
+  return (
+    <div style={{
+      minHeight: "100vh",
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+      background: "linear-gradient(135deg, #0f0f1a 0%, #1a1a2e 50%, #16213e 100%)",
+      position: "relative",
+      overflow: "hidden",
+      padding: "20px",
+    }}>
+
+      {/* ===== CÍRCULOS DECORATIVOS ===== */}
+      {/* Motorista → Verde + Roxo */}
+
+      {/* Círculo superior direito — VERDE */}
+      <div style={{
+        position: "absolute", top: "-120px", right: "-120px",
+        width: "450px", height: "450px", borderRadius: "50%",
+        background: "radial-gradient(circle, rgba(0,212,170,0.35), transparent 70%)",
+        pointerEvents: "none",
+      }} />
+
+      {/* Círculo inferior esquerdo — ROXO */}
+      <div style={{
+        position: "absolute", bottom: "-120px", left: "-120px",
+        width: "450px", height: "450px", borderRadius: "50%",
+        background: "radial-gradient(circle, rgba(108,99,255,0.3), transparent 70%)",
+        pointerEvents: "none",
+      }} />
+
+      {/* Card principal com efeito glassmorphism */}
+      <motion.div
+        initial={{ opacity: 0, y: 40 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6, ease: "easeOut" }}
+        style={{
+          background: "rgba(255,255,255,0.05)",
+          backdropFilter: "blur(20px)",
+          WebkitBackdropFilter: "blur(20px)",
+          border: "1px solid rgba(255,255,255,0.1)",
+          borderRadius: "24px",
+          padding: "36px 32px",
+          width: "100%",
+          maxWidth: "540px",
+          maxHeight: "90vh",
+          overflowY: "auto",
+          position: "relative",
+          zIndex: 10,
+        }}
+      >
         {/* Cabeçalho */}
-        <button onClick={() => navigate("/menu")} style={estilos.botaoVoltar}>
-          ← Voltar
-        </button>
-        <div style={estilos.cabecalho}>
-          <h2 style={estilos.titulo}>🚕 Minhas Corridas</h2>
-          <button onClick={buscarCorridas} style={estilos.botaoAtualizar}>
-            🔄 Atualizar
-          </button>
+        <div style={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          marginBottom: "20px",
+        }}>
+          <div>
+            <h2 style={{
+              color: "#ffffff",
+              fontSize: "20px",
+              margin: "0",
+              fontFamily: "Poppins, sans-serif",
+            }}>
+              🚕 Minhas Corridas
+            </h2>
+          </div>
+
+          <div style={{ display: "flex", gap: "10px" }}>
+            <button
+              onClick={() => navigate("/menu")}
+              style={{
+                padding: "8px 14px",
+                background: "rgba(255,255,255,0.07)",
+                color: "#a0aec0",
+                border: "1px solid rgba(255,255,255,0.1)",
+                borderRadius: "10px",
+                cursor: "pointer",
+                fontSize: "13px",
+                fontWeight: "600",
+                transition: "all 0.3s ease",
+              }}
+              onMouseEnter={(e) => {
+                e.target.style.background = "rgba(255,255,255,0.15)";
+              }}
+              onMouseLeave={(e) => {
+                e.target.style.background = "rgba(255,255,255,0.07)";
+              }}
+            >
+              ← Voltar
+            </button>
+            <button
+              onClick={buscarCorridas}
+              style={{
+                padding: "8px 14px",
+                background: "rgba(255,255,255,0.07)",
+                color: "#a0aec0",
+                border: "1px solid rgba(255,255,255,0.1)",
+                borderRadius: "10px",
+                cursor: "pointer",
+                fontSize: "13px",
+                fontWeight: "600",
+                transition: "all 0.3s ease",
+              }}
+              onMouseEnter={(e) => {
+                e.target.style.background = "rgba(255,255,255,0.15)";
+              }}
+              onMouseLeave={(e) => {
+                e.target.style.background = "rgba(255,255,255,0.07)";
+              }}
+            >
+              🔄 Atualizar
+            </button>
+          </div>
         </div>
 
         {/* Mensagens */}
-        {mensagem && <p style={estilos.sucesso}>{mensagem}</p>}
-        {erro && <p style={estilos.erro}>{erro}</p>}
-
-        {carregando && <p style={estilos.mensagem}>Carregando corridas...</p>}
+        {mensagem && (
+          <div style={{
+            background: "rgba(0,212,170,0.15)",
+            border: "1px solid rgba(0,212,170,0.3)",
+            color: "#00d4aa",
+            borderRadius: "12px",
+            padding: "12px 16px",
+            marginBottom: "16px",
+            fontSize: "14px",
+            textAlign: "center",
+          }}>
+            {mensagem}
+          </div>
+        )}
+        {erro && (
+          <div style={{
+            background: "rgba(255,101,132,0.15)",
+            border: "1px solid rgba(255,101,132,0.3)",
+            color: "#ff6584",
+            borderRadius: "12px",
+            padding: "12px 16px",
+            marginBottom: "16px",
+            fontSize: "14px",
+            textAlign: "center",
+          }}>
+            {erro}
+          </div>
+        )}
 
         {!carregando && (
           <>
             {/* ===== CORRIDAS QUE O MOTORISTA ACEITOU ===== */}
             {corridasConfirmadas.length > 0 && (
-              <div style={estilos.secao}>
-                <h3 style={estilos.secaoTitulo}>✅ Corridas em andamento</h3>
-                <p style={estilos.secaoDesc}>
-                  Corridas que aceitaste — podes cancelar se necessário.
+              <div style={{
+                marginBottom: "28px",
+              }}>
+                <h3 style={{
+                  color: "#00d4aa",
+                  fontSize: "15px",
+                  marginBottom: "4px",
+                  fontFamily: "Poppins, sans-serif",
+                }}>
+                  ✅ Em andamento
+                </h3>
+                <p style={{
+                  color: "#a0aec0",
+                  fontSize: "13px",
+                  marginBottom: "12px",
+                }}>
+                  Corridas que aceitaste — podes finalizar ou cancelar.
                 </p>
 
-                {corridasConfirmadas.map((corrida) => (
-                  <div key={corrida.id} style={{...estilos.card, borderColor: "#86efac"}}>
+                {/* Linha divisória */}
+                <div style={{
+                  borderBottom: "1px solid rgba(0,212,170,0.2)",
+                  marginBottom: "16px",
+                }} />
 
-                    <p style={estilos.rota}>
+                {corridasConfirmadas.map((corrida, index) => (
+                  <motion.div
+                    key={corrida.id}
+                    initial={{ opacity: 0, x: -20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: index * 0.05 }}
+                    whileHover={{ scale: 1.01 }}
+                    style={{
+                      background: "rgba(0,212,170,0.05)",
+                      border: "2px solid #00d4aa",
+                      borderRadius: "14px",
+                      padding: "16px 18px",
+                      marginBottom: "12px",
+                      transition: "all 0.3s ease",
+                    }}
+                  >
+                    <p style={{
+                      fontWeight: "700",
+                      color: "#ffffff",
+                      fontSize: "15px",
+                      margin: "0 0 8px 0",
+                    }}>
                       {corrida.origem} → {corrida.destino}
                     </p>
 
-                    <div style={estilos.detalhes}>
-                      <span style={estilos.detalhe}>🚗 {corrida.tipo_veiculo}</span>
-                      <span style={estilos.detalhe}>📍 {corrida.distancia} km</span>
-                      <span style={estilos.detalhe}>💰 R${corrida.valor.toFixed(2)}</span>
+                    <div style={{
+                      display: "flex",
+                      gap: "16px",
+                      marginBottom: "8px",
+                    }}>
+                      <span style={{ fontSize: "13px", color: "#a0aec0" }}>
+                        🚗 {corrida.tipo_veiculo}
+                      </span>
+                      <span style={{ fontSize: "13px", color: "#a0aec0" }}>
+                        📏 {corrida.distancia} km
+                      </span>
+                      <span style={{ fontSize: "13px", color: "#a0aec0" }}>
+                        💰 R${corrida.valor.toFixed(2)}
+                      </span>
                     </div>
 
-                    <span style={{...estilos.badge, backgroundColor: "#dbeafe", color: "#1d4ed8"}}>
+                    <span style={{
+                      display: "inline-block",
+                      padding: "2px 10px",
+                      background: "rgba(0,212,170,0.15)",
+                      color: "#00d4aa",
+                      borderRadius: "20px",
+                      fontSize: "12px",
+                      fontWeight: "600",
+                      marginBottom: "12px",
+                    }}>
                       confirmada
                     </span>
 
-                    <div style={estilos.acoes}>
+                    <div style={{
+                      display: "flex",
+                      gap: "10px",
+                    }}>
                       <button
                         onClick={() => handleFinalizar(corrida.id)}
-                        style={estilos.botaoFinalizar}
+                        style={{
+                          flex: 1,
+                          padding: "10px",
+                          background: "linear-gradient(135deg, #00d4aa, #00b894)",
+                          color: "white",
+                          border: "none",
+                          borderRadius: "10px",
+                          cursor: "pointer",
+                          fontWeight: "600",
+                          fontSize: "14px",
+                          transition: "all 0.3s ease",
+                        }}
+                        onMouseEnter={(e) => {
+                          e.target.style.transform = "scale(1.02)";
+                        }}
+                        onMouseLeave={(e) => {
+                          e.target.style.transform = "scale(1)";
+                        }}
                       >
                         ✓ Finalizar
                       </button>
                       <button
                         onClick={() => handleCancelar(corrida.id)}
-                        style={estilos.botaoCancelar}
+                        style={{
+                          flex: 1,
+                          padding: "10px",
+                          background: "rgba(255,101,132,0.15)",
+                          color: "#ff6584",
+                          border: "1px solid rgba(255,101,132,0.3)",
+                          borderRadius: "10px",
+                          cursor: "pointer",
+                          fontWeight: "600",
+                          fontSize: "14px",
+                          transition: "all 0.3s ease",
+                        }}
+                        onMouseEnter={(e) => {
+                          e.target.style.background = "rgba(255,101,132,0.25)";
+                        }}
+                        onMouseLeave={(e) => {
+                          e.target.style.background = "rgba(255,101,132,0.15)";
+                        }}
                       >
                         ✕ Cancelar
                       </button>
                     </div>
-
-                  </div>
+                  </motion.div>
                 ))}
               </div>
             )}
 
             {/* ===== CORRIDAS PENDENTES DISPONÍVEIS ===== */}
-            <div style={estilos.secao}>
-              <h3 style={estilos.secaoTitulo}>🔍 Corridas disponíveis</h3>
-              <p style={estilos.secaoDesc}>
+            <div style={{
+              marginBottom: "0",
+            }}>
+              <h3 style={{
+                color: "#6c63ff",
+                fontSize: "15px",
+                marginBottom: "4px",
+                fontFamily: "Poppins, sans-serif",
+              }}>
+                🔍 Corridas disponíveis
+              </h3>
+              <p style={{
+                color: "#a0aec0",
+                fontSize: "13px",
+                marginBottom: "12px",
+              }}>
                 Corridas à espera de um motorista.
               </p>
 
+              {/* Linha divisória */}
+              {corridasConfirmadas.length > 0 && (
+                <div style={{
+                  borderBottom: "1px solid rgba(108,99,255,0.2)",
+                  marginBottom: "16px",
+                }} />
+              )}
+
               {corridasPendentes.length === 0 ? (
-                <div style={estilos.vazio}>
-                  <p style={{fontSize: "40px", margin: "0"}}>🔍</p>
-                  <p style={estilos.vazioTexto}>
+                <div style={{
+                  textAlign: "center",
+                  padding: "40px 20px",
+                  color: "#a0aec0",
+                }}>
+                  <p style={{ fontSize: "40px", margin: "0" }}>🔍</p>
+                  <p style={{ fontSize: "14px", marginTop: "8px" }}>
                     Nenhuma corrida pendente no momento.
                   </p>
                 </div>
               ) : (
-                corridasPendentes.map((corrida) => (
-                  <div key={corrida.id} style={estilos.card}>
-
-                    <p style={estilos.rota}>
+                corridasPendentes.map((corrida, index) => (
+                  <motion.div
+                    key={corrida.id}
+                    initial={{ opacity: 0, x: -20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: index * 0.05 }}
+                    whileHover={{ scale: 1.01 }}
+                    style={{
+                      background: "rgba(255,255,255,0.05)",
+                      border: "2px solid rgba(108,99,255,0.3)",
+                      borderRadius: "14px",
+                      padding: "16px 18px",
+                      marginBottom: "12px",
+                      transition: "all 0.3s ease",
+                    }}
+                  >
+                    <p style={{
+                      fontWeight: "700",
+                      color: "#ffffff",
+                      fontSize: "15px",
+                      margin: "0 0 8px 0",
+                    }}>
                       {corrida.origem} → {corrida.destino}
                     </p>
 
-                    <div style={estilos.detalhes}>
-                      <span style={estilos.detalhe}>🚗 {corrida.tipo_veiculo}</span>
-                      <span style={estilos.detalhe}>📍 {corrida.distancia} km</span>
-                      <span style={estilos.detalhe}>💰 R${corrida.valor.toFixed(2)}</span>
+                    <div style={{
+                      display: "flex",
+                      gap: "16px",
+                      marginBottom: "8px",
+                    }}>
+                      <span style={{ fontSize: "13px", color: "#a0aec0" }}>
+                        🚗 {corrida.tipo_veiculo}
+                      </span>
+                      <span style={{ fontSize: "13px", color: "#a0aec0" }}>
+                        📏 {corrida.distancia} km
+                      </span>
+                      <span style={{ fontSize: "13px", color: "#a0aec0" }}>
+                        💰 R${corrida.valor.toFixed(2)}
+                      </span>
                     </div>
 
-                    <span style={estilos.badge}>pendente</span>
+                    <span style={{
+                      display: "inline-block",
+                      padding: "2px 10px",
+                      background: "rgba(234,179,8,0.15)",
+                      color: "#eab308",
+                      borderRadius: "20px",
+                      fontSize: "12px",
+                      fontWeight: "600",
+                      marginBottom: "12px",
+                    }}>
+                      pendente
+                    </span>
 
-                    <div style={estilos.acoes}>
+                    <div style={{
+                      display: "flex",
+                      gap: "10px",
+                    }}>
                       <button
                         onClick={() => handleAceitar(corrida.id)}
-                        style={estilos.botaoAceitar}
+                        style={{
+                          flex: 1,
+                          padding: "10px",
+                          background: "linear-gradient(135deg, #6c63ff, #8b85ff)",
+                          color: "white",
+                          border: "none",
+                          borderRadius: "10px",
+                          cursor: "pointer",
+                          fontWeight: "600",
+                          fontSize: "14px",
+                          transition: "all 0.3s ease",
+                        }}
+                        onMouseEnter={(e) => {
+                          e.target.style.transform = "scale(1.02)";
+                        }}
+                        onMouseLeave={(e) => {
+                          e.target.style.transform = "scale(1)";
+                        }}
                       >
                         ✓ Aceitar
                       </button>
                       <button
                         onClick={() => handleRecusar(corrida.id)}
-                        style={estilos.botaoRecusar}
+                        style={{
+                          flex: 1,
+                          padding: "10px",
+                          background: "rgba(255,255,255,0.07)",
+                          color: "#a0aec0",
+                          border: "1px solid rgba(255,255,255,0.1)",
+                          borderRadius: "10px",
+                          cursor: "pointer",
+                          fontWeight: "600",
+                          fontSize: "14px",
+                          transition: "all 0.3s ease",
+                        }}
+                        onMouseEnter={(e) => {
+                          e.target.style.background = "rgba(255,255,255,0.15)";
+                        }}
+                        onMouseLeave={(e) => {
+                          e.target.style.background = "rgba(255,255,255,0.07)";
+                        }}
                       >
                         ✕ Recusar
                       </button>
                     </div>
-
-                  </div>
+                  </motion.div>
                 ))
               )}
             </div>
           </>
         )}
 
-      </div>
+      </motion.div>
     </div>
   );
 }
 
-
-// ===================== ESTILOS =====================
-const estilos = {
-  container: {
-    display: "flex",
-    justifyContent: "center",
-    alignItems: "flex-start",
-    minHeight: "100vh",
-    backgroundColor: "#f0f2f5",
-    padding: "20px",
-  },
-  caixa: {
-    backgroundColor: "white",
-    padding: "32px",
-    borderRadius: "12px",
-    boxShadow: "0 4px 20px rgba(0,0,0,0.1)",
-    width: "100%",
-    maxWidth: "520px",
-  },
-  botaoVoltar: {
-    background: "none",
-    border: "none",
-    color: "#2563eb",
-    cursor: "pointer",
-    fontSize: "14px",
-    fontWeight: "600",
-    padding: "0",
-    marginBottom: "16px",
-  },
-  cabecalho: {
-    display: "flex",
-    justifyContent: "space-between",
-    alignItems: "center",
-    marginBottom: "20px",
-  },
-  titulo: {
-    color: "#1a1a2e",
-    fontSize: "20px",
-    margin: "0",
-  },
-  botaoAtualizar: {
-    padding: "8px 12px",
-    backgroundColor: "#f3f4f6",
-    color: "#374151",
-    border: "1px solid #d1d5db",
-    borderRadius: "8px",
-    cursor: "pointer",
-    fontSize: "13px",
-    fontWeight: "600",
-  },
-  sucesso: {
-    backgroundColor: "#dcfce7",
-    color: "#16a34a",
-    padding: "10px",
-    borderRadius: "8px",
-    marginBottom: "16px",
-    fontSize: "14px",
-  },
-  erro: {
-    backgroundColor: "#fee2e2",
-    color: "#dc2626",
-    padding: "10px",
-    borderRadius: "8px",
-    marginBottom: "16px",
-    fontSize: "14px",
-  },
-  mensagem: {
-    textAlign: "center",
-    color: "#666",
-    padding: "20px",
-  },
-  secao: {
-    marginBottom: "24px",
-  },
-  secaoTitulo: {
-    color: "#1a1a2e",
-    fontSize: "15px",
-    marginBottom: "4px",
-  },
-  secaoDesc: {
-    color: "#666",
-    fontSize: "13px",
-    marginBottom: "12px",
-  },
-  vazio: {
-    textAlign: "center",
-    padding: "24px",
-    backgroundColor: "#f8fafc",
-    borderRadius: "8px",
-  },
-  vazioTexto: {
-    color: "#666",
-    fontSize: "14px",
-    marginTop: "8px",
-  },
-  card: {
-    border: "1px solid #e5e7eb",
-    borderRadius: "8px",
-    padding: "16px",
-    marginBottom: "12px",
-  },
-  rota: {
-    fontWeight: "700",
-    color: "#1a1a2e",
-    fontSize: "15px",
-    margin: "0 0 8px 0",
-  },
-  detalhes: {
-    display: "flex",
-    gap: "16px",
-    marginBottom: "8px",
-  },
-  detalhe: {
-    fontSize: "13px",
-    color: "#374151",
-  },
-  badge: {
-    display: "inline-block",
-    padding: "2px 10px",
-    backgroundColor: "#fef9c3",
-    color: "#854d0e",
-    borderRadius: "20px",
-    fontSize: "12px",
-    fontWeight: "600",
-    marginBottom: "12px",
-  },
-  acoes: {
-    display: "flex",
-    gap: "10px",
-  },
-  botaoAceitar: {
-    flex: 1,
-    padding: "10px",
-    backgroundColor: "#16a34a",
-    color: "white",
-    border: "none",
-    borderRadius: "8px",
-    cursor: "pointer",
-    fontWeight: "600",
-    fontSize: "14px",
-  },
-  botaoRecusar: {
-    flex: 1,
-    padding: "10px",
-    backgroundColor: "white",
-    color: "#374151",
-    border: "1px solid #d1d5db",
-    borderRadius: "8px",
-    cursor: "pointer",
-    fontWeight: "600",
-    fontSize: "14px",
-  },
-  botaoFinalizar: {
-    flex: 1,
-    padding: "10px",
-    backgroundColor: "#2563eb",   // Azul
-    color: "white",
-    border: "none",
-    borderRadius: "8px",
-    cursor: "pointer",
-    fontWeight: "600",
-    fontSize: "14px",
-  },
-  botaoCancelar: {
-    flex: 1,
-    padding: "10px",
-    backgroundColor: "#fee2e2",
-    color: "#dc2626",
-    border: "1px solid #fca5a5",
-    borderRadius: "8px",
-    cursor: "pointer",
-    fontWeight: "600",
-    fontSize: "14px",
-  },
-};
-
-
 export default CorridasMotorista;
+

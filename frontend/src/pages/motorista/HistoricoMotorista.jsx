@@ -1,9 +1,11 @@
 
 // pages/motorista/HistoricoMotorista.jsx - Histórico de corridas do motorista
 // Mostra todas as corridas que o motorista aceitou — confirmadas, finalizadas e canceladas
+// Design moderno com glassmorphism, cards coloridos por status e resumo em cards
 
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { motion } from "framer-motion";
 import api from "../../api/axios";   // Dois níveis acima — pasta motorista está dentro de pages
 
 
@@ -35,47 +37,190 @@ function HistoricoMotorista() {
   }, []); // [] = executa apenas uma vez ao montar
 
 
-  // ===================== COR DO STATUS =====================
-  // Retorna estilo diferente baseado no status da corrida
-  const corStatus = (status) => {
-    const cores = {
-      confirmada: { backgroundColor: "#dbeafe", color: "#1d4ed8" },  // Azul
-      finalizada: { backgroundColor: "#dcfce7", color: "#16a34a" },  // Verde
-      cancelada:  { backgroundColor: "#fee2e2", color: "#dc2626" },  // Vermelho
-      pendente:   { backgroundColor: "#fef9c3", color: "#854d0e" },  // Amarelo
-    };
-    return cores[status] || { backgroundColor: "#f3f4f6", color: "#374151" };
+  // ===================== CORES POR STATUS =====================
+  // Mesmo mapeamento que no Historico.jsx do passageiro
+  const coresStatus = {
+    pendente: { borda: "#eab308", bg: "rgba(234,179,8,0.1)", texto: "#eab308", label: "⏳ Pendente" },
+    confirmada: { borda: "#6c63ff", bg: "rgba(108,99,255,0.1)", texto: "#6c63ff", label: "✅ Confirmada" },
+    finalizada: { borda: "#00d4aa", bg: "rgba(0,212,170,0.1)", texto: "#00d4aa", label: "🏁 Finalizada" },
+    cancelada: { borda: "#ff6584", bg: "rgba(255,101,132,0.1)", texto: "#ff6584", label: "❌ Cancelada" },
+  };
+
+
+  // ===================== FORMATAR DATA =====================
+  const formatarData = (dataISO) => {
+    const data = new Date(dataISO);
+    return data.toLocaleDateString("pt-BR", {
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+    });
   };
 
 
   // ===================== INTERFACE =====================
+
+  if (carregando) {
+    return (
+      <div style={{
+        minHeight: "100vh",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        background: "linear-gradient(135deg, #0f0f1a 0%, #1a1a2e 50%, #16213e 100%)",
+      }}>
+        <p style={{ color: "#a0aec0" }}>Carregando histórico...</p>
+      </div>
+    );
+  }
+
   return (
-    <div style={estilos.container}>
-      <div style={estilos.caixa}>
+    <div style={{
+      minHeight: "100vh",
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+      background: "linear-gradient(135deg, #0f0f1a 0%, #1a1a2e 50%, #16213e 100%)",
+      position: "relative",
+      overflow: "hidden",
+      padding: "20px",
+    }}>
 
-        {/* Cabeçalho */}
-        <button onClick={() => navigate("/menu")} style={estilos.botaoVoltar}>
-          ← Voltar
-        </button>
-        <h2 style={estilos.titulo}>📋 Meu Histórico</h2>
+      {/* ===== CÍRCULOS DECORATIVOS ===== */}
+      {/* Histórico Motorista → Roxo + Azul (mesmo do passageiro) */}
 
-        {/* Carregando */}
-        {carregando && <p style={estilos.mensagem}>Carregando histórico...</p>}
+      {/* Círculo superior direito — ROXO */}
+      <div style={{
+        position: "absolute", top: "-120px", right: "-120px",
+        width: "450px", height: "450px", borderRadius: "50%",
+        background: "radial-gradient(circle, rgba(108,99,255,0.35), transparent 70%)",
+        pointerEvents: "none",
+      }} />
 
-        {/* Erro */}
-        {erro && <p style={estilos.erro}>{erro}</p>}
+      {/* Círculo inferior esquerdo — AZUL */}
+      <div style={{
+        position: "absolute", bottom: "-120px", left: "-120px",
+        width: "450px", height: "450px", borderRadius: "50%",
+        background: "radial-gradient(circle, rgba(37,99,235,0.3), transparent 70%)",
+        pointerEvents: "none",
+      }} />
+
+      {/* Card principal com efeito glassmorphism */}
+      <motion.div
+        initial={{ opacity: 0, y: 40 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6, ease: "easeOut" }}
+        style={{
+          background: "rgba(255,255,255,0.05)",
+          backdropFilter: "blur(20px)",
+          WebkitBackdropFilter: "blur(20px)",
+          border: "1px solid rgba(255,255,255,0.1)",
+          borderRadius: "24px",
+          padding: "36px 32px",
+          width: "100%",
+          maxWidth: "540px",
+          maxHeight: "90vh",
+          overflowY: "auto",
+          position: "relative",
+          zIndex: 10,
+        }}
+      >
+        {/* ===== ENCABEZADO ===== */}
+        <div style={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          marginBottom: "24px",
+        }}>
+          <div>
+            <h1 style={{
+              fontSize: "22px", fontWeight: "700", color: "#ffffff",
+              margin: 0, fontFamily: "Poppins, sans-serif",
+            }}>
+              📋 Meu Histórico
+            </h1>
+            <p style={{
+              color: "#a0aec0", fontSize: "13px", marginTop: "2px",
+            }}>
+              {corridas.length} corrida{corridas.length !== 1 ? "s" : ""} encontrada{corridas.length !== 1 ? "s" : ""}
+            </p>
+          </div>
+
+          {/* Botão voltar */}
+          <button
+            onClick={() => navigate("/menu")}
+            style={{
+              padding: "8px 16px",
+              background: "rgba(255,255,255,0.07)",
+              color: "#a0aec0",
+              border: "1px solid rgba(255,255,255,0.1)",
+              borderRadius: "10px",
+              cursor: "pointer",
+              fontSize: "13px",
+              fontWeight: "600",
+              transition: "all 0.3s ease",
+            }}
+            onMouseEnter={(e) => {
+              e.target.style.background = "rgba(255,255,255,0.15)";
+            }}
+            onMouseLeave={(e) => {
+              e.target.style.background = "rgba(255,255,255,0.07)";
+            }}
+          >
+            ← Voltar
+          </button>
+        </div>
+
+        {/* Mensagem de erro */}
+        {erro && (
+          <div style={{
+            background: "rgba(255,101,132,0.15)",
+            border: "1px solid rgba(255,101,132,0.3)",
+            color: "#ff6584",
+            borderRadius: "12px",
+            padding: "12px 16px",
+            marginBottom: "20px",
+            fontSize: "14px",
+            textAlign: "center",
+          }}>
+            {erro}
+          </div>
+        )}
 
         {/* Lista vazia */}
         {!carregando && !erro && corridas.length === 0 && (
-          <div style={estilos.vazio}>
-            <p style={{fontSize: "48px", margin: "0"}}>🚗</p>
-            <p style={estilos.vazioTexto}>Nenhuma corrida no histórico.</p>
-            <p style={{color: "#666", fontSize: "13px"}}>
-              As corridas que aceitar aparecerão aqui.
+          <div style={{
+            textAlign: "center",
+            padding: "40px 20px",
+            color: "#a0aec0",
+          }}>
+            <p style={{ fontSize: "48px", marginBottom: "12px" }}>🚗</p>
+            <p style={{ fontSize: "16px" }}>Nenhuma corrida no histórico.</p>
+            <p style={{ fontSize: "14px", marginTop: "4px" }}>
+              As corridas que aceitares aparecerão aqui.
             </p>
             <button
               onClick={() => navigate("/motorista/corridas")}
-              style={estilos.botao}
+              style={{
+                marginTop: "20px",
+                padding: "12px 24px",
+                background: "linear-gradient(135deg, #6c63ff, #8b85ff)",
+                color: "white",
+                border: "none",
+                borderRadius: "12px",
+                cursor: "pointer",
+                fontSize: "14px",
+                fontWeight: "600",
+                transition: "all 0.3s ease",
+              }}
+              onMouseEnter={(e) => {
+                e.target.style.transform = "scale(1.02)";
+              }}
+              onMouseLeave={(e) => {
+                e.target.style.transform = "scale(1)";
+              }}
             >
               Ver corridas disponíveis
             </button>
@@ -86,207 +231,174 @@ function HistoricoMotorista() {
         {!carregando && corridas.length > 0 && (
           <>
             {/* Cards de resumo */}
-            <div style={estilos.resumo}>
-
-              <div style={estilos.resumoCard}>
-                <p style={estilos.resumoNumero}>
+            <div style={{
+              display: "flex",
+              gap: "12px",
+              marginBottom: "20px",
+            }}>
+              <div style={{
+                flex: 1,
+                border: "1px solid rgba(108,99,255,0.3)",
+                borderRadius: "12px",
+                padding: "12px",
+                textAlign: "center",
+                background: "rgba(108,99,255,0.05)",
+              }}>
+                <p style={{
+                  fontSize: "24px",
+                  fontWeight: "700",
+                  color: "#6c63ff",
+                  margin: "0 0 4px 0",
+                }}>
                   {corridas.filter(c => c.status === "confirmada").length}
                 </p>
-                <p style={estilos.resumoLabel}>Em curso</p>
+                <p style={{
+                  fontSize: "12px",
+                  color: "#a0aec0",
+                  margin: "0",
+                }}>
+                  Em curso
+                </p>
               </div>
 
-              <div style={estilos.resumoCard}>
-                <p style={estilos.resumoNumero}>
+              <div style={{
+                flex: 1,
+                border: "1px solid rgba(0,212,170,0.3)",
+                borderRadius: "12px",
+                padding: "12px",
+                textAlign: "center",
+                background: "rgba(0,212,170,0.05)",
+              }}>
+                <p style={{
+                  fontSize: "24px",
+                  fontWeight: "700",
+                  color: "#00d4aa",
+                  margin: "0 0 4px 0",
+                }}>
                   {corridas.filter(c => c.status === "finalizada").length}
                 </p>
-                <p style={estilos.resumoLabel}>Finalizadas</p>
+                <p style={{
+                  fontSize: "12px",
+                  color: "#a0aec0",
+                  margin: "0",
+                }}>
+                  Finalizadas
+                </p>
               </div>
 
-              <div style={{...estilos.resumoCard, borderColor: "#fca5a5"}}>
-                <p style={{...estilos.resumoNumero, color: "#dc2626"}}>
+              <div style={{
+                flex: 1,
+                border: "1px solid rgba(255,101,132,0.3)",
+                borderRadius: "12px",
+                padding: "12px",
+                textAlign: "center",
+                background: "rgba(255,101,132,0.05)",
+              }}>
+                <p style={{
+                  fontSize: "24px",
+                  fontWeight: "700",
+                  color: "#ff6584",
+                  margin: "0 0 4px 0",
+                }}>
                   {corridas.filter(c => c.status === "cancelada").length}
                 </p>
-                <p style={estilos.resumoLabel}>Canceladas</p>
+                <p style={{
+                  fontSize: "12px",
+                  color: "#a0aec0",
+                  margin: "0",
+                }}>
+                  Canceladas
+                </p>
               </div>
-
             </div>
 
             {/* Lista de corridas */}
-            <div style={estilos.lista}>
-              {corridas.map((corrida) => (
-                <div key={corrida.id} style={estilos.card}>
+            <div style={{
+              display: "flex",
+              flexDirection: "column",
+              gap: "12px",
+            }}>
+              {corridas.map((corrida, index) => {
+                const status = corrida.status || "pendente";
+                const cores = coresStatus[status] || coresStatus.pendente;
 
-                  {/* Linha superior — rota e status */}
-                  <div style={estilos.cardTopo}>
-                    <p style={estilos.rota}>
-                      {corrida.origem} → {corrida.destino}
-                    </p>
-                    {/* Badge colorido com o status */}
-                    <span style={{...estilos.badge, ...corStatus(corrida.status)}}>
-                      {corrida.status}
-                    </span>
-                  </div>
+                return (
+                  <motion.div
+                    key={corrida.id}
+                    initial={{ opacity: 0, x: -20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: index * 0.05 }}
+                    whileHover={{ scale: 1.01 }}
+                    style={{
+                      background: "rgba(255,255,255,0.05)",
+                      border: `2px solid ${cores.borda}`,
+                      borderRadius: "14px",
+                      padding: "16px 18px",
+                      transition: "all 0.3s ease",
+                    }}
+                  >
+                    {/* ===== LIGNE 1 : Origem → Destino ===== */}
+                    <div style={{
+                      display: "flex",
+                      justifyContent: "space-between",
+                      alignItems: "center",
+                      marginBottom: "8px",
+                    }}>
+                      <span style={{
+                        color: "#ffffff",
+                        fontSize: "15px",
+                        fontWeight: "600",
+                      }}>
+                        {corrida.origem} <span style={{ color: "#a0aec0" }}>→</span> {corrida.destino}
+                      </span>
+                      <span style={{
+                        background: cores.bg,
+                        color: cores.texto,
+                        padding: "2px 10px",
+                        borderRadius: "20px",
+                        fontSize: "11px",
+                        fontWeight: "600",
+                      }}>
+                        {cores.label}
+                      </span>
+                    </div>
 
-                  {/* Detalhes */}
-                  <div style={estilos.detalhes}>
-                    <span style={estilos.detalhe}>🚗 {corrida.tipo_veiculo}</span>
-                    <span style={estilos.detalhe}>📍 {corrida.distancia} km</span>
-                    <span style={estilos.detalhe}>💰 R${corrida.valor.toFixed(2)}</span>
-                  </div>
-
-                  {/* Data */}
-                  <p style={estilos.data}>
-                    {new Date(corrida.criado_em).toLocaleString("pt-BR")}
-                  </p>
-
-                </div>
-              ))}
+                    {/* ===== LIGNE 2 : Détails ===== */}
+                    <div style={{
+                      display: "flex",
+                      justifyContent: "space-between",
+                      alignItems: "center",
+                      flexWrap: "wrap",
+                      gap: "8px",
+                    }}>
+                      <div style={{
+                        display: "flex",
+                        gap: "16px",
+                        fontSize: "12px",
+                        color: "#a0aec0",
+                      }}>
+                        <span>🚗 {corrida.tipo_veiculo || "Não definido"}</span>
+                        <span>📏 {corrida.distancia || 0} km</span>
+                        <span>💰 R$ {corrida.valor?.toFixed(2) || "0.00"}</span>
+                      </div>
+                      <span style={{
+                        fontSize: "11px",
+                        color: "#a0aec0",
+                      }}>
+                        {formatarData(corrida.criado_em)}
+                      </span>
+                    </div>
+                  </motion.div>
+                );
+              })}
             </div>
           </>
         )}
 
-      </div>
+      </motion.div>
     </div>
   );
 }
-
-
-// ===================== ESTILOS =====================
-const estilos = {
-  container: {
-    display: "flex",
-    justifyContent: "center",
-    alignItems: "flex-start",
-    minHeight: "100vh",
-    backgroundColor: "#f0f2f5",
-    padding: "20px",
-  },
-  caixa: {
-    backgroundColor: "white",
-    padding: "32px",
-    borderRadius: "12px",
-    boxShadow: "0 4px 20px rgba(0,0,0,0.1)",
-    width: "100%",
-    maxWidth: "520px",
-  },
-  botaoVoltar: {
-    background: "none",
-    border: "none",
-    color: "#2563eb",
-    cursor: "pointer",
-    fontSize: "14px",
-    fontWeight: "600",
-    padding: "0",
-    marginBottom: "16px",
-  },
-  titulo: {
-    color: "#1a1a2e",
-    marginBottom: "20px",
-    fontSize: "20px",
-  },
-  mensagem: {
-    textAlign: "center",
-    color: "#666",
-    padding: "20px",
-  },
-  erro: {
-    backgroundColor: "#fee2e2",
-    color: "#dc2626",
-    padding: "10px",
-    borderRadius: "8px",
-    fontSize: "14px",
-    textAlign: "center",
-  },
-  vazio: {
-    textAlign: "center",
-    padding: "40px 20px",
-  },
-  vazioTexto: {
-    color: "#374151",
-    fontWeight: "600",
-    marginBottom: "8px",
-  },
-  botao: {
-    padding: "10px 20px",
-    backgroundColor: "#2563eb",
-    color: "white",
-    border: "none",
-    borderRadius: "8px",
-    cursor: "pointer",
-    fontWeight: "600",
-    fontSize: "14px",
-    marginTop: "16px",
-  },
-  resumo: {
-    display: "flex",
-    gap: "12px",
-    marginBottom: "20px",
-  },
-  resumoCard: {
-    flex: 1,
-    border: "1px solid #e5e7eb",
-    borderRadius: "8px",
-    padding: "12px",
-    textAlign: "center",
-  },
-  resumoNumero: {
-    fontSize: "24px",
-    fontWeight: "700",
-    color: "#1a1a2e",
-    margin: "0 0 4px 0",
-  },
-  resumoLabel: {
-    fontSize: "12px",
-    color: "#666",
-    margin: "0",
-  },
-  lista: {
-    display: "flex",
-    flexDirection: "column",
-    gap: "12px",
-  },
-  card: {
-    border: "1px solid #e5e7eb",
-    borderRadius: "8px",
-    padding: "16px",
-  },
-  cardTopo: {
-    display: "flex",
-    justifyContent: "space-between",
-    alignItems: "flex-start",
-    marginBottom: "8px",
-  },
-  rota: {
-    fontWeight: "600",
-    color: "#1a1a2e",
-    fontSize: "14px",
-    margin: "0",
-    flex: 1,
-    marginRight: "12px",
-  },
-  badge: {
-    padding: "2px 10px",
-    borderRadius: "20px",
-    fontSize: "12px",
-    fontWeight: "600",
-    whiteSpace: "nowrap",
-  },
-  detalhes: {
-    display: "flex",
-    gap: "16px",
-    marginBottom: "6px",
-  },
-  detalhe: {
-    fontSize: "13px",
-    color: "#374151",
-  },
-  data: {
-    fontSize: "12px",
-    color: "#9ca3af",
-    margin: "0",
-  },
-};
-
 
 export default HistoricoMotorista;
 

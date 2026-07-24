@@ -4,6 +4,7 @@
 
 import { useState, useEffect } from "react";  // useState para guardar dados, useEffect para buscar dados ao carregar
 import { useNavigate } from "react-router-dom"; // Para navegar entre telas e fazer logout
+import { motion } from "framer-motion";        // Para animações profissionais
 import api from "../api/axios";                 // Nossa instância configurada do axios
 
 
@@ -50,8 +51,15 @@ function Menu() {
   // Mostra mensagem de carregamento enquanto os dados não chegaram
   if (!usuario) {
     return (
-      <div style={estilos.container}>
-        <p style={estilos.carregando}>
+      <div style={{
+        minHeight: "100vh",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        background: "linear-gradient(135deg, #0f0f1a 0%, #1a1a2e 50%, #16213e 100%)",
+        padding: "20px",
+      }}>
+        <p style={{ color: "#a0aec0", fontSize: "16px" }}>
           {erro || "Carregando..."} {/* Mostra erro se houver, senão mostra "Carregando..." */}
         </p>
       </div>
@@ -59,192 +67,352 @@ function Menu() {
   }
 
   return (
-    <div style={estilos.container}>
-      <div style={estilos.caixa}>
+    <div style={{
+      minHeight: "100vh",
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+      background: "linear-gradient(135deg, #0f0f1a 0%, #1a1a2e 50%, #16213e 100%)",
+      position: "relative",
+      overflow: "hidden",
+      padding: "20px",
+    }}>
 
-        {/* Cabeçalho com saudação e botão de logout */}
-        <div style={estilos.cabecalho}>
+      {/* ===== CÍRCULOS DECORATIVOS ===== */}
+      {/* Menu → Roxo + Rosa */}
+
+      {/* Círculo superior direito — ROXO */}
+      <div style={{
+        position: "absolute", top: "-120px", right: "-120px",
+        width: "450px", height: "450px", borderRadius: "50%",
+        background: "radial-gradient(circle, rgba(108,99,255,0.35), transparent 70%)",
+        pointerEvents: "none",
+      }} />
+
+      {/* Círculo inferior esquerdo — ROSA */}
+      <div style={{
+        position: "absolute", bottom: "-120px", left: "-120px",
+        width: "450px", height: "450px", borderRadius: "50%",
+        background: "radial-gradient(circle, rgba(255,101,132,0.3), transparent 70%)",
+        pointerEvents: "none",
+      }} />
+
+      {/* Card principal com efeito glassmorphism */}
+      <motion.div
+        initial={{ opacity: 0, y: 40 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6, ease: "easeOut" }}
+        style={{
+          background: "rgba(255,255,255,0.05)",
+          backdropFilter: "blur(20px)",
+          WebkitBackdropFilter: "blur(20px)",
+          border: "1px solid rgba(255,255,255,0.1)",
+          borderRadius: "24px",
+          padding: "36px 32px",
+          width: "100%",
+          maxWidth: "440px",
+          position: "relative",
+          zIndex: 10,
+        }}
+      >
+        {/* ===== ENCABEZADO: Título + Logout ===== */}
+        <div style={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          marginBottom: "20px",
+        }}>
           <div>
-            <h1 style={estilos.titulo}>🚗 Eve Safety First</h1>
-            {/* Mostra o nome do utilizador — dados vêm do estado usuario */}
-            <p style={estilos.saudacao}>Olá, {usuario.nome.split(" ")[0]}! 👋</p>
-            {/* .split(" ")[0] pega apenas o primeiro nome */}
+            <h1 style={{
+              fontSize: "20px", fontWeight: "700", color: "#ffffff",
+              margin: 0, fontFamily: "Poppins, sans-serif",
+            }}>
+              🚗 Eve Safety First
+            </h1>
+            <p style={{
+              color: "#a0aec0", fontSize: "15px", marginTop: "2px",
+            }}>
+              Olá, {usuario.nome.split(" ")[0]}! 👋
+              {/* .split(" ")[0] pega apenas o primeiro nome */}
+            </p>
           </div>
 
           {/* Botão de logout */}
-          <button onClick={handleLogout} style={estilos.botaoLogout}>
+          <button
+            onClick={handleLogout}
+            style={{
+              padding: "6px 14px",
+              background: "rgba(255,101,132,0.15)",
+              color: "#ff6584",
+              border: "1px solid rgba(255,101,132,0.3)",
+              borderRadius: "8px",
+              cursor: "pointer",
+              fontWeight: "600",
+              fontSize: "12px",
+              transition: "all 0.3s ease",
+            }}
+            onMouseEnter={(e) => {
+              e.target.style.background = "rgba(255,101,132,0.25)";
+            }}
+            onMouseLeave={(e) => {
+              e.target.style.background = "rgba(255,101,132,0.15)";
+            }}
+          >
             Sair
           </button>
         </div>
 
-        {/* Card com informações do perfil */}
-        <div style={estilos.perfil}>
-          <p style={estilos.perfilTexto}>📧 {usuario.email}</p>
-          <p style={estilos.perfilTexto}>📱 {usuario.telefone}</p>
-          <p style={estilos.perfilTexto}>
-            {/* Emoji diferente baseado no tipo do utilizador */}
+        {/* ===== CARD COM DADOS DO PERFIL ===== */}
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.2 }}
+          style={{
+            background: "rgba(255,255,255,0.05)",
+            border: "1px solid rgba(255,255,255,0.08)",
+            padding: "14px 18px",
+            borderRadius: "12px",
+            marginBottom: "24px",
+          }}
+        >
+          <p style={{
+            color: "#a0aec0", fontSize: "14px", margin: "4px 0",
+            display: "flex", alignItems: "center", gap: "8px",
+          }}>
+            <span>📧</span> {usuario.email}
+          </p>
+          <p style={{
+            color: "#a0aec0", fontSize: "14px", margin: "4px 0",
+            display: "flex", alignItems: "center", gap: "8px",
+          }}>
+            <span>📱</span> {usuario.telefone}
+          </p>
+          <p style={{
+            color: "#a0aec0", fontSize: "14px", margin: "4px 0",
+            display: "flex", alignItems: "center", gap: "8px",
+          }}>
             {usuario.tipo === "passageiro" ? "🧍 Passageiro" : "🚗 Motorista"}
           </p>
-        </div>
+        </motion.div>
 
-        {/* Botões de navegação — só aparecem para passageiros */}
+        {/* ===== BOTÕES DE NAVEGAÇÃO ===== */}
         {usuario.tipo === "passageiro" && (
-          <div style={estilos.botoes}>
+          <div style={{
+            display: "flex",
+            flexDirection: "column",
+            gap: "10px",
+          }}>
 
-            {/* Cada botão navega para uma tela diferente */}
-            <button
-              onClick={() => navigate("/corrida")}  // Vai para SolicitarCorrida
-              style={estilos.botao}
+            {/* BOTÃO 1 — Solicitar Corrida (roxo gradiente) */}
+            <motion.button
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 0.3 }}
+              whileHover={{ scale: 1.02, x: 4 }}
+              whileTap={{ scale: 0.98 }}
+              onClick={() => navigate("/corrida")}
+              style={{
+                padding: "14px 18px",
+                background: "linear-gradient(135deg, #6c63ff, #8b85ff)",
+                color: "white",
+                border: "none",
+                borderRadius: "12px",
+                fontSize: "15px",
+                fontWeight: "600",
+                cursor: "pointer",
+                textAlign: "left",
+                transition: "all 0.3s ease",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+              }}
             >
-              🚕 Solicitar Corrida
-            </button>
+              <span>🚕 Solicitar Corrida</span>
+              <span style={{ opacity: 0.6 }}>→</span>
+            </motion.button>
 
-            <button
-              onClick={() => navigate("/historico")} // Vai para Historico
-              style={estilos.botao}
+            {/* BOTÃO 2 — Histórico (glass) */}
+            <motion.button
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 0.35 }}
+              whileHover={{ scale: 1.02, x: 4 }}
+              whileTap={{ scale: 0.98 }}
+              onClick={() => navigate("/historico")}
+              style={{
+                padding: "14px 18px",
+                background: "rgba(255,255,255,0.07)",
+                color: "white",
+                border: "1px solid rgba(255,255,255,0.1)",
+                borderRadius: "12px",
+                fontSize: "15px",
+                fontWeight: "600",
+                cursor: "pointer",
+                textAlign: "left",
+                transition: "all 0.3s ease",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+              }}
             >
-              📋 Histórico de Corridas
-            </button>
+              <span>📋 Histórico de Corridas</span>
+              <span style={{ opacity: 0.6 }}>→</span>
+            </motion.button>
 
-            <button
-              onClick={() => navigate("/pagamento")} // Vai para Pagamento
-              style={{...estilos.botao, backgroundColor: "#16a34a"}} // Verde para pagamento
+            {/* BOTÃO 3 — Pagamentos (verde) */}
+            <motion.button
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 0.4 }}
+              whileHover={{ scale: 1.02, x: 4 }}
+              whileTap={{ scale: 0.98 }}
+              onClick={() => navigate("/pagamento")}
+              style={{
+                padding: "14px 18px",
+                background: "rgba(0,212,170,0.15)",
+                color: "#00d4aa",
+                border: "1px solid rgba(0,212,170,0.3)",
+                borderRadius: "12px",
+                fontSize: "15px",
+                fontWeight: "600",
+                cursor: "pointer",
+                textAlign: "left",
+                transition: "all 0.3s ease",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+              }}
             >
-              💳 Meus Pagamentos
-            </button>
+              <span>💳 Meus Pagamentos</span>
+              <span style={{ opacity: 0.6 }}>→</span>
+            </motion.button>
 
-            <button
+            {/* BOTÃO 4 — Suporte (glass) */}
+            <motion.button
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 0.45 }}
+              whileHover={{ scale: 1.02, x: 4 }}
+              whileTap={{ scale: 0.98 }}
               onClick={() => navigate("/suporte")}
-              style={{...estilos.botao, backgroundColor: "#6366f1"}}
+              style={{
+                padding: "14px 18px",
+                background: "rgba(99,102,241,0.15)",
+                color: "#818cf8",
+                border: "1px solid rgba(99,102,241,0.3)",
+                borderRadius: "12px",
+                fontSize: "15px",
+                fontWeight: "600",
+                cursor: "pointer",
+                textAlign: "left",
+                transition: "all 0.3s ease",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+              }}
             >
-              🎧 Suporte
-            </button>
+              <span>🎧 Suporte</span>
+              <span style={{ opacity: 0.6 }}>→</span>
+            </motion.button>
 
           </div>
         )}
 
-        {/* Botões para motoristas */}
+        {/* ===== BOTÕES PARA MOTORISTAS ===== */}
         {usuario.tipo === "motorista" && (
-          <div style={estilos.botoes}>
+          <div style={{
+            display: "flex",
+            flexDirection: "column",
+            gap: "10px",
+          }}>
 
-            <button
+            <motion.button
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 0.3 }}
+              whileHover={{ scale: 1.02, x: 4 }}
+              whileTap={{ scale: 0.98 }}
               onClick={() => navigate("/motorista/corridas")}
-              style={estilos.botao}
+              style={{
+                padding: "14px 18px",
+                background: "linear-gradient(135deg, #6c63ff, #8b85ff)",
+                color: "white",
+                border: "none",
+                borderRadius: "12px",
+                fontSize: "15px",
+                fontWeight: "600",
+                cursor: "pointer",
+                textAlign: "left",
+                transition: "all 0.3s ease",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+              }}
             >
-              🚕 Corridas Disponíveis
-            </button>
+              <span>🚕 Corridas Disponíveis</span>
+              <span style={{ opacity: 0.6 }}>→</span>
+            </motion.button>
 
-            <button
+            <motion.button
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 0.35 }}
+              whileHover={{ scale: 1.02, x: 4 }}
+              whileTap={{ scale: 0.98 }}
               onClick={() => navigate("/motorista/historico")}
-              style={estilos.botao}
+              style={{
+                padding: "14px 18px",
+                background: "rgba(255,255,255,0.07)",
+                color: "white",
+                border: "1px solid rgba(255,255,255,0.1)",
+                borderRadius: "12px",
+                fontSize: "15px",
+                fontWeight: "600",
+                cursor: "pointer",
+                textAlign: "left",
+                transition: "all 0.3s ease",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+              }}
             >
-              📋 Meu Histórico
-            </button>
+              <span>📋 Meu Histórico</span>
+              <span style={{ opacity: 0.6 }}>→</span>
+            </motion.button>
 
-            <button
+            <motion.button
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 0.4 }}
+              whileHover={{ scale: 1.02, x: 4 }}
+              whileTap={{ scale: 0.98 }}
               onClick={() => navigate("/suporte")}
-              style={{...estilos.botao, backgroundColor: "#6366f1"}}
+              style={{
+                padding: "14px 18px",
+                background: "rgba(99,102,241,0.15)",
+                color: "#818cf8",
+                border: "1px solid rgba(99,102,241,0.3)",
+                borderRadius: "12px",
+                fontSize: "15px",
+                fontWeight: "600",
+                cursor: "pointer",
+                textAlign: "left",
+                transition: "all 0.3s ease",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+              }}
             >
-              🎧 Suporte
-            </button>
+              <span>🎧 Suporte</span>
+              <span style={{ opacity: 0.6 }}>→</span>
+            </motion.button>
 
           </div>
         )}
 
-      </div>
+      </motion.div>
     </div>
   );
 }
 
-
-// ===================== ESTILOS =====================
-const estilos = {
-  container: {
-    display: "flex",
-    justifyContent: "center",
-    alignItems: "center",
-    minHeight: "100vh",
-    backgroundColor: "#f0f2f5",
-    padding: "20px",
-  },
-  caixa: {
-    backgroundColor: "white",
-    padding: "32px",
-    borderRadius: "12px",
-    boxShadow: "0 4px 20px rgba(0,0,0,0.1)",
-    width: "100%",
-    maxWidth: "480px",
-  },
-  cabecalho: {
-    display: "flex",
-    justifyContent: "space-between", // Título à esquerda, botão logout à direita
-    alignItems: "flex-start",
-    marginBottom: "20px",
-  },
-  titulo: {
-    color: "#1a1a2e",
-    fontSize: "20px",
-    margin: 0,
-  },
-  saudacao: {
-    color: "#374151",
-    fontSize: "16px",
-    marginTop: "4px",
-  },
-  botaoLogout: {
-    padding: "8px 16px",
-    backgroundColor: "#fee2e2",    // Fundo vermelho claro
-    color: "#dc2626",              // Texto vermelho
-    border: "none",
-    borderRadius: "8px",
-    cursor: "pointer",
-    fontWeight: "600",
-    fontSize: "14px",
-  },
-  perfil: {
-    backgroundColor: "#f8fafc",   // Fundo cinza muito claro
-    padding: "16px",
-    borderRadius: "8px",
-    marginBottom: "24px",
-  },
-  perfilTexto: {
-    color: "#374151",
-    fontSize: "14px",
-    margin: "4px 0",
-  },
-  botoes: {
-    display: "flex",
-    flexDirection: "column",       // Botões em coluna — um por linha
-    gap: "12px",                   // Espaço entre botões
-  },
-  botao: {
-    padding: "14px",
-    backgroundColor: "#2563eb",   // Azul
-    color: "white",
-    border: "none",
-    borderRadius: "8px",
-    fontSize: "15px",
-    fontWeight: "600",
-    cursor: "pointer",
-    textAlign: "left",            // Texto alinhado à esquerda
-  },
-  motorista: {
-    backgroundColor: "#fef9c3",   // Fundo amarelo claro
-    padding: "20px",
-    borderRadius: "8px",
-    textAlign: "center",
-  },
-  motoristaTexto: {
-    color: "#854d0e",             // Texto amarelo escuro
-    fontSize: "14px",
-    margin: "4px 0",
-  },
-  carregando: {
-    color: "#374151",
-    fontSize: "16px",
-  },
-};
-
-
 export default Menu;
-

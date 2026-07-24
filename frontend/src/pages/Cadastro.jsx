@@ -1,9 +1,11 @@
 
 // pages/Cadastro.jsx - Tela de cadastro de passageiro ou motorista
 // O formulário adapta-se automaticamente ao tipo escolhido
+// Design moderno com glassmorphism, animações e cards interativos
 
 import { useState } from "react";                    // Para guardar os valores dos campos
 import { useNavigate, Link } from "react-router-dom"; // Para navegar entre telas
+import { motion } from "framer-motion";              // Para animações profissionais
 import api from "../api/axios";                       // Nossa instância configurada do axios
 
 
@@ -73,321 +75,385 @@ function Cadastro() {
   };
 
 
+  // ===================== ESTILOS REUTILIZÁVEIS =====================
+  // DRY — Define uma vez e reutiliza em todos os campos
+
+  const inputStyle = {
+    width: "100%", padding: "13px 16px",
+    background: "rgba(255,255,255,0.07)",
+    border: "1px solid rgba(255,255,255,0.1)",
+    borderRadius: "12px", color: "#ffffff",
+    fontSize: "14px", outline: "none",
+    transition: "border 0.3s ease",
+    boxSizing: "border-box",
+  };
+
+  const labelStyle = {
+    display: "block", fontSize: "13px",
+    fontWeight: "500", color: "#a0aec0", marginBottom: "6px",
+  };
+
+
   // ===================== INTERFACE =====================
   return (
-    <div style={estilos.container}>
-      <div style={estilos.caixa}>
+    <div style={{
+      minHeight: "100vh", display: "flex", alignItems: "center",
+      justifyContent: "center", padding: "20px",
+      background: "linear-gradient(135deg, #0f0f1a 0%, #1a1a2e 50%, #16213e 100%)",
+      position: "relative", overflow: "hidden",
+    }}>
 
-        <h1 style={estilos.titulo}>🚗 Eve Safety First</h1>
-        <p style={estilos.subtitulo}>Criar nova conta</p>
+      {/* ===== CÍRCULOS DECORATIVOS ===== */}
+      {/* Cadastro → Roxo + Verde Turquesa */}
+
+      {/* Círculo superior direito — ROXO */}
+      <div style={{
+        position: "absolute", top: "-120px", right: "-120px",
+        width: "450px", height: "450px", borderRadius: "50%",
+        background: "radial-gradient(circle, rgba(108,99,255,0.35), transparent 70%)",
+        pointerEvents: "none",
+      }} />
+
+      {/* Círculo inferior esquerdo — VERDE TURQUESA */}
+      <div style={{
+        position: "absolute", bottom: "-120px", left: "-120px",
+        width: "450px", height: "450px", borderRadius: "50%",
+        background: "radial-gradient(circle, rgba(0,212,170,0.3), transparent 70%)",
+        pointerEvents: "none",
+      }} />
+
+      {/* Card principal com efeito glassmorphism */}
+      <motion.div
+        initial={{ opacity: 0, y: 40 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6, ease: "easeOut" }}
+        style={{
+          background: "rgba(255,255,255,0.05)",
+          backdropFilter: "blur(20px)",
+          WebkitBackdropFilter: "blur(20px)",
+          border: "1px solid rgba(255,255,255,0.1)",
+          borderRadius: "24px", padding: "40px",
+          width: "100%", maxWidth: "460px",
+          maxHeight: "90vh",
+          overflowY: "auto",
+          position: "relative", zIndex: 10,
+        }}
+      >
+        {/* Logo e título com animação de spring */}
+        <motion.div
+          initial={{ scale: 0 }}
+          animate={{ scale: 1 }}
+          transition={{ delay: 0.2, type: "spring", stiffness: 200 }}
+          style={{ textAlign: "center", marginBottom: "28px" }}
+        >
+          <div style={{ fontSize: "48px", marginBottom: "12px" }}>🚗</div>
+          <h1 style={{
+            fontSize: "26px", fontWeight: "700", color: "#ffffff",
+            marginBottom: "4px", fontFamily: "Poppins, sans-serif",
+          }}>
+            Eve Safety First
+          </h1>
+          <p style={{ fontSize: "13px", color: "#a0aec0" }}>Criar nova conta</p>
+        </motion.div>
 
         {/* Mensagem de erro — só aparece se houver erro */}
-        {erro && <p style={estilos.erro}>{erro}</p>}
+        {erro && (
+          <motion.div
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            style={{
+              background: "rgba(255,101,132,0.15)",
+              border: "1px solid rgba(255,101,132,0.3)",
+              color: "#ff6584", borderRadius: "12px",
+              padding: "12px 16px", marginBottom: "20px",
+              fontSize: "14px", textAlign: "center",
+            }}
+          >
+            {erro}
+          </motion.div>
+        )}
 
         {/* Mensagem de sucesso — só aparece após cadastro bem-sucedido */}
-        {sucesso && <p style={estilos.sucesso}>{sucesso}</p>}
+        {sucesso && (
+          <motion.div
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            style={{
+              background: "rgba(0,212,170,0.15)",
+              border: "1px solid rgba(0,212,170,0.3)",
+              color: "#00d4aa", borderRadius: "12px",
+              padding: "12px 16px", marginBottom: "20px",
+              fontSize: "14px", textAlign: "center",
+            }}
+          >
+            {sucesso}
+          </motion.div>
+        )}
 
         <form onSubmit={handleCadastro}>
 
           {/* Seletor de tipo — passageiro ou motorista */}
-          <div style={estilos.seletor}>
+          <div style={{ display: "flex", gap: "10px", marginBottom: "24px" }}>
 
-            {/* Botão passageiro — fica azul se selecionado */}
-            <button
-              type="button"           // type="button" impede que submeta o formulário
-              onClick={() => setTipo("passageiro")}  // Muda o tipo para passageiro
-              style={tipo === "passageiro" ? estilos.tipoAtivo : estilos.tipoInativo}
-            >
-              🧍 Passageiro
-            </button>
-
-            {/* Botão motorista */}
-            <button
-              type="button"
-              onClick={() => setTipo("motorista")}
-              style={tipo === "motorista" ? estilos.tipoAtivo : estilos.tipoInativo}
-            >
-              🚗 Motorista
-            </button>
-
+            {/* Botão passageiro — fica violeta se selecionado */}
+            {["passageiro", "motorista"].map((t) => (
+              <button
+                key={t}
+                type="button"           // type="button" impede que submeta o formulário
+                onClick={() => setTipo(t)}  // Muda o tipo para passageiro ou motorista
+                style={{
+                  flex: 1, padding: "11px",
+                  background: tipo === t
+                    ? "linear-gradient(135deg, #6c63ff, #8b85ff)"
+                    : "rgba(255,255,255,0.07)",
+                  border: tipo === t ? "none" : "1px solid rgba(255,255,255,0.1)",
+                  borderRadius: "12px", color: "#ffffff",
+                  fontWeight: "600", fontSize: "14px", cursor: "pointer",
+                  transition: "all 0.3s ease",
+                }}
+              >
+                {t === "passageiro" ? "🧍 Passageiro" : "🚗 Motorista"}
+              </button>
+            ))}
           </div>
 
           {/* ===== CAMPOS COMUNS ===== */}
+          {/* Cada campo tem a mesma estrutura — input + label */}
 
-          <div style={estilos.campo}>
-            <label style={estilos.label}>Nome completo</label>
-            <input
-              type="text"
-              value={nome}
-              onChange={(e) => setNome(e.target.value)}
-              placeholder="Seu nome completo"
-              style={estilos.input}
-              required
-            />
+          <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
+
+            {/* Nome completo */}
+            <div>
+              <label style={labelStyle}>Nome completo</label>
+              <input
+                type="text"
+                value={nome}
+                onChange={(e) => setNome(e.target.value)}
+                placeholder="Seu nome completo"
+                required
+                style={inputStyle}
+                onFocus={(e) => e.target.style.border = "1px solid #6c63ff"}
+                onBlur={(e) => e.target.style.border = "1px solid rgba(255,255,255,0.1)"}
+              />
+            </div>
+
+            {/* CPF (apenas números) */}
+            <div>
+              <label style={labelStyle}>CPF (apenas números)</label>
+              <input
+                type="text"
+                value={cpf}
+                onChange={(e) => setCpf(e.target.value)}
+                placeholder="52998224725"
+                maxLength={11}          // Limita a 11 caracteres no input
+                required
+                style={inputStyle}
+                onFocus={(e) => e.target.style.border = "1px solid #6c63ff"}
+                onBlur={(e) => e.target.style.border = "1px solid rgba(255,255,255,0.1)"}
+              />
+            </div>
+
+            {/* Email */}
+            <div>
+              <label style={labelStyle}>Email</label>
+              <input
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="seu@email.com"
+                required
+                style={inputStyle}
+                onFocus={(e) => e.target.style.border = "1px solid #6c63ff"}
+                onBlur={(e) => e.target.style.border = "1px solid rgba(255,255,255,0.1)"}
+              />
+            </div>
+
+            {/* Senha */}
+            <div>
+              <label style={labelStyle}>Senha</label>
+              <input
+                type="password"
+                value={senha}
+                onChange={(e) => setSenha(e.target.value)}
+                placeholder="Mínimo 6 caracteres"
+                required
+                style={inputStyle}
+                onFocus={(e) => e.target.style.border = "1px solid #6c63ff"}
+                onBlur={(e) => e.target.style.border = "1px solid rgba(255,255,255,0.1)"}
+              />
+            </div>
+
+            {/* Telefone */}
+            <div>
+              <label style={labelStyle}>Telefone</label>
+              <input
+                type="text"
+                value={telefone}
+                onChange={(e) => setTelefone(e.target.value)}
+                placeholder="82989641022"
+                required
+                style={inputStyle}
+                onFocus={(e) => e.target.style.border = "1px solid #6c63ff"}
+                onBlur={(e) => e.target.style.border = "1px solid rgba(255,255,255,0.1)"}
+              />
+            </div>
+
+            {/* ===== CAMPOS EXCLUSIVOS DO MOTORISTA ===== */}
+            {/* Renderização condicional — só aparecem se tipo === "motorista" */}
+            {/* Animação fluida com Framer Motion — aparece deslizando */}
+
+            {tipo === "motorista" && (
+              <motion.div
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: "auto" }}
+                transition={{ duration: 0.3 }}
+                style={{ display: "flex", flexDirection: "column", gap: "16px" }}
+              >
+                {/* Divisor visual — separa os campos do motorista */}
+                <div style={{
+                  borderTop: "1px solid rgba(255,255,255,0.1)",
+                  paddingTop: "4px",
+                }}>
+                  <p style={{ fontSize: "12px", color: "#6c63ff", fontWeight: "600" }}>
+                    DADOS DO VEÍCULO
+                  </p>
+                </div>
+
+                {/* CNH */}
+                <div>
+                  <label style={labelStyle}>CNH (apenas números)</label>
+                  <input
+                    type="text"
+                    value={cnh}
+                    onChange={(e) => setCnh(e.target.value)}
+                    placeholder="59090100108"
+                    maxLength={11}
+                    required
+                    style={inputStyle}
+                    onFocus={(e) => e.target.style.border = "1px solid #6c63ff"}
+                    onBlur={(e) => e.target.style.border = "1px solid rgba(255,255,255,0.1)"}
+                  />
+                </div>
+
+                {/* Placa */}
+                <div>
+                  <label style={labelStyle}>Placa do veículo</label>
+                  <input
+                    type="text"
+                    value={placa}
+                    onChange={(e) => setPlaca(e.target.value)}
+                    placeholder="ABC1234"
+                    required
+                    style={inputStyle}
+                    onFocus={(e) => e.target.style.border = "1px solid #6c63ff"}
+                    onBlur={(e) => e.target.style.border = "1px solid rgba(255,255,255,0.1)"}
+                  />
+                </div>
+
+                {/* Modelo do veículo */}
+                <div>
+                  <label style={labelStyle}>Modelo do veículo</label>
+                  <input
+                    type="text"
+                    value={modeloVeiculo}
+                    onChange={(e) => setModeloVeiculo(e.target.value)}
+                    placeholder="Toyota Corolla"
+                    required
+                    style={inputStyle}
+                    onFocus={(e) => e.target.style.border = "1px solid #6c63ff"}
+                    onBlur={(e) => e.target.style.border = "1px solid rgba(255,255,255,0.1)"}
+                  />
+                </div>
+
+                {/* Tipo de veículo — select moderno com cards interativos */}
+                <div>
+                  <label style={labelStyle}>Tipo do veículo</label>
+                  <div style={{ display: "flex", gap: "8px" }}>
+                    {[
+                      { id: "Moto", emoji: "🏍️", preco: "R$1/km" },
+                      { id: "Carro", emoji: "🚗", preco: "R$2/km" },
+                      { id: "VIP", emoji: "⭐", preco: "R$4/km" },
+                    ].map((v) => (
+                      <button
+                        key={v.id}
+                        type="button"
+                        onClick={() => setTipoVeiculo(v.id)}
+                        style={{
+                          flex: 1, padding: "10px 6px",
+                          background: tipoVeiculo === v.id
+                            ? "rgba(108,99,255,0.2)"
+                            : "rgba(255,255,255,0.05)",
+                          border: tipoVeiculo === v.id
+                            ? "2px solid #6c63ff"
+                            : "2px solid rgba(255,255,255,0.1)",
+                          borderRadius: "10px", cursor: "pointer",
+                          color: "#ffffff", textAlign: "center",
+                          transition: "all 0.3s ease",
+                        }}
+                      >
+                        <div style={{ fontSize: "20px" }}>{v.emoji}</div>
+                        <div style={{ fontSize: "11px", fontWeight: "600", marginTop: "2px" }}>{v.id}</div>
+                        <div style={{ fontSize: "10px", color: "#a0aec0" }}>{v.preco}</div>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+              </motion.div>
+            )}
+
+            {/* Botão de cadastro */}
+            <button
+              type="submit"
+              disabled={carregando}
+              className="btn-glow"
+              style={{
+                width: "100%", padding: "14px",
+                background: carregando
+                  ? "rgba(108,99,255,0.5)"
+                  : "linear-gradient(135deg, #6c63ff, #8b85ff)",
+                border: "none", borderRadius: "12px",
+                color: "#ffffff", fontSize: "15px",
+                fontWeight: "600", cursor: carregando ? "not-allowed" : "pointer",
+                display: "flex", alignItems: "center", justifyContent: "center", gap: "8px",
+                marginTop: "8px",
+              }}
+            >
+              {carregando ? (
+                <>
+                  {/* Spinner animado durante carregamento */}
+                  <span style={{
+                    width: "16px", height: "16px",
+                    border: "2px solid rgba(255,255,255,0.3)",
+                    borderTop: "2px solid white", borderRadius: "50%",
+                    animation: "spin 0.8s linear infinite", display: "inline-block",
+                  }} />
+                  Criando conta...
+                </>
+              ) : "Criar conta"}
+            </button>
+
           </div>
-
-          <div style={estilos.campo}>
-            <label style={estilos.label}>CPF (apenas números)</label>
-            <input
-              type="text"
-              value={cpf}
-              onChange={(e) => setCpf(e.target.value)}
-              placeholder="52998224725"
-              maxLength={11}          // Limita a 11 caracteres no input
-              style={estilos.input}
-              required
-            />
-          </div>
-
-          <div style={estilos.campo}>
-            <label style={estilos.label}>Email</label>
-            <input
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="seu@email.com"
-              style={estilos.input}
-              required
-            />
-          </div>
-
-          <div style={estilos.campo}>
-            <label style={estilos.label}>Senha</label>
-            <input
-              type="password"
-              value={senha}
-              onChange={(e) => setSenha(e.target.value)}
-              placeholder="Mínimo 6 caracteres"
-              style={estilos.input}
-              required
-            />
-          </div>
-
-          <div style={estilos.campo}>
-            <label style={estilos.label}>Telefone</label>
-            <input
-              type="text"
-              value={telefone}
-              onChange={(e) => setTelefone(e.target.value)}
-              placeholder="82989641022"
-              style={estilos.input}
-              required
-            />
-          </div>
-
-          {/* ===== CAMPOS EXCLUSIVOS DO MOTORISTA ===== */}
-          {/* Renderização condicional — só aparecem se tipo === "motorista" */}
-
-          {tipo === "motorista" && (
-            <>
-              {/* <> </> é um Fragment — agrupa elementos sem adicionar div extra no HTML */}
-
-              <div style={estilos.campo}>
-                <label style={estilos.label}>CNH (apenas números)</label>
-                <input
-                  type="text"
-                  value={cnh}
-                  onChange={(e) => setCnh(e.target.value)}
-                  placeholder="59090100108"
-                  maxLength={11}
-                  style={estilos.input}
-                  required
-                />
-              </div>
-
-              <div style={estilos.campo}>
-                <label style={estilos.label}>Placa do veículo</label>
-                <input
-                  type="text"
-                  value={placa}
-                  onChange={(e) => setPlaca(e.target.value)}
-                  placeholder="ABC1234"
-                  style={estilos.input}
-                  required
-                />
-              </div>
-
-              <div style={estilos.campo}>
-                <label style={estilos.label}>Modelo do veículo</label>
-                <input
-                  type="text"
-                  value={modeloVeiculo}
-                  onChange={(e) => setModeloVeiculo(e.target.value)}
-                  placeholder="Toyota Corolla"
-                  style={estilos.input}
-                  required
-                />
-              </div>
-
-              <div style={estilos.campo}>
-                <label style={estilos.label}>Tipo do veículo</label>
-                {/* Select — menu suspenso com as 3 opções */}
-                <select
-                  value={tipoVeiculo}
-                  onChange={(e) => setTipoVeiculo(e.target.value)}
-                  style={estilos.input}
-                >
-                  <option value="Moto">Moto — R$1,00/km</option>
-                  <option value="Carro">Carro — R$2,00/km</option>
-                  <option value="VIP">VIP — R$4,00/km</option>
-                </select>
-              </div>
-
-            </>
-          )}
-
-          {/* Botão de cadastro */}
-          <button
-            type="submit"
-            style={carregando ? estilos.botaoDesativado : estilos.botao}
-            disabled={carregando}
-          >
-            {carregando ? "Criando conta..." : "Criar conta"}
-          </button>
-
         </form>
 
         {/* Link para voltar ao login */}
-        <p style={estilos.linkTexto}>
+        <p style={{
+          textAlign: "center", marginTop: "24px",
+          fontSize: "14px", color: "#a0aec0",
+        }}>
           Já tem conta?{" "}
-          <Link to="/" style={estilos.link}>Entrar</Link>
+          <Link to="/" style={{ color: "#6c63ff", fontWeight: "600", textDecoration: "none" }}>
+            Entrar
+          </Link>
         </p>
 
-      </div>
+      </motion.div>
+
+      {/* CSS para o spinner — animação de rotação */}
+      <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
     </div>
   );
 }
-
-
-// ===================== ESTILOS =====================
-const estilos = {
-  container: {
-    display: "flex",
-    justifyContent: "center",
-    alignItems: "center",
-    minHeight: "100vh",
-    backgroundColor: "#f0f2f5",
-    padding: "20px",              // Padding para ecrãs pequenos
-  },
-  caixa: {
-    backgroundColor: "white",
-    padding: "40px",
-    borderRadius: "12px",
-    boxShadow: "0 4px 20px rgba(0,0,0,0.1)",
-    width: "100%",
-    maxWidth: "440px",
-  },
-  titulo: {
-    textAlign: "center",
-    color: "#1a1a2e",
-    marginBottom: "8px",
-    fontSize: "24px",
-  },
-  subtitulo: {
-    textAlign: "center",
-    color: "#666",
-    marginBottom: "24px",
-    fontSize: "14px",
-  },
-  erro: {
-    backgroundColor: "#fee2e2",
-    color: "#dc2626",
-    padding: "10px",
-    borderRadius: "8px",
-    marginBottom: "16px",
-    fontSize: "14px",
-    textAlign: "center",
-  },
-  sucesso: {
-    backgroundColor: "#dcfce7",   // Fundo verde claro
-    color: "#16a34a",             // Texto verde
-    padding: "10px",
-    borderRadius: "8px",
-    marginBottom: "16px",
-    fontSize: "14px",
-    textAlign: "center",
-  },
-  seletor: {
-    display: "flex",
-    gap: "10px",                  // Espaço entre os botões
-    marginBottom: "20px",
-  },
-  tipoAtivo: {
-    flex: 1,                      // Ocupa metade do espaço disponível
-    padding: "10px",
-    backgroundColor: "#2563eb",   // Azul — selecionado
-    color: "white",
-    border: "none",
-    borderRadius: "8px",
-    cursor: "pointer",
-    fontWeight: "600",
-  },
-  tipoInativo: {
-    flex: 1,
-    padding: "10px",
-    backgroundColor: "white",
-    color: "#374151",
-    border: "1px solid #d1d5db",  // Borda cinza — não selecionado
-    borderRadius: "8px",
-    cursor: "pointer",
-    fontWeight: "600",
-  },
-  campo: {
-    marginBottom: "16px",
-  },
-  label: {
-    display: "block",
-    marginBottom: "6px",
-    color: "#374151",
-    fontSize: "14px",
-    fontWeight: "600",
-  },
-  input: {
-    width: "100%",
-    padding: "10px 12px",
-    border: "1px solid #d1d5db",
-    borderRadius: "8px",
-    fontSize: "14px",
-    outline: "none",
-    boxSizing: "border-box",
-  },
-  botao: {
-    width: "100%",
-    padding: "12px",
-    backgroundColor: "#2563eb",
-    color: "white",
-    border: "none",
-    borderRadius: "8px",
-    fontSize: "16px",
-    fontWeight: "600",
-    cursor: "pointer",
-    marginTop: "8px",
-  },
-  botaoDesativado: {
-    width: "100%",
-    padding: "12px",
-    backgroundColor: "#93c5fd",
-    color: "white",
-    border: "none",
-    borderRadius: "8px",
-    fontSize: "16px",
-    fontWeight: "600",
-    cursor: "not-allowed",
-    marginTop: "8px",
-  },
-  linkTexto: {
-    textAlign: "center",
-    marginTop: "16px",
-    fontSize: "14px",
-    color: "#666",
-  },
-  link: {
-    color: "#2563eb",
-    textDecoration: "none",
-    fontWeight: "600",
-  },
-};
-
 
 export default Cadastro;
 

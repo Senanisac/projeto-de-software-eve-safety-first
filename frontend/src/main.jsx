@@ -4,6 +4,7 @@
 
 import { StrictMode } from "react";           // StrictMode ativa avisos extras durante desenvolvimento
 import { createRoot } from "react-dom/client"; // createRoot conecta o React ao HTML
+import "./index.css";    // ← importa o CSS global aqui
 import App from "./App.jsx";                   // Importa o componente principal da aplicação
 
 // Seleciona o elemento <div id="root"> que existe no index.html
